@@ -53,6 +53,52 @@ local function initWagon()
     character:add("walk", {8, 9, 10, 11, 12, 13, 14, 15}, 100, true)
 end
 
+local function createRandomCustomer()
+    local c = CharacterFactory.create()
+    
+    -- 1. 데이터 풀 준비
+    local firstNames = {"김", "이", "박", "최", "정", "강", "조", "윤"}
+    local lastNames = {"철수", "영희", "춘자", "덕배", "광식", "지혜", "칠득", "소희"}
+    local destinations = {"안산", "한양", "강릉", "부산", "평양", "수원", "강화"}
+    
+    -- 2. 특성 통합 풀 (긍정/부정/중립)
+    -- 각 특성마다 '타입' 정보를 같이 저장해서 색상을 입힐 수 있게 합니다.
+    local allTraits = {
+        { name = "애주가", type = "Positive" },
+        { name = "부자", type = "Positive" },
+        { name = "정직함", type = "Positive" },
+        { name = "쾌활함", type = "Positive" },
+        
+        { name = "술꾼", type = "Negative" },
+        { name = "구두쇠", type = "Negative" },
+        { name = "까칠함", type = "Negative" },
+        { name = "수다쟁이", type = "Negative" },
+        
+        { name = "평범함", type = "Neutral" },
+        { name = "여행객", type = "Neutral" },
+        { name = "학자", type = "Neutral" },
+        { name = "짐꾼", type = "Neutral" }
+    }
+
+    -- 3. 랜덤 데이터 주입
+    c.name = firstNames[math.random(#firstNames)] .. lastNames[math.random(#lastNames)]
+    c.dest = destinations[math.random(#destinations)]
+    c.fee = math.random(2, 15) * 10
+    
+    -- 4. 특성 2개 랜덤 추출 (중복 방지)
+    local t1_idx = math.random(#allTraits)
+    local t2_idx = math.random(#allTraits)
+    while t1_idx == t2_idx do -- 중복이면 다시 뽑기
+        t2_idx = math.random(#allTraits)
+    end
+    
+    c.trait1 = allTraits[t1_idx]
+    c.trait2 = allTraits[t2_idx]
+    
+    c.isBoarding = false
+    return c
+end
+
 local function initStateMachine()
     fsm = StateMachine.new()
     fsm:addState("idle", {
@@ -61,14 +107,14 @@ local function initStateMachine()
             character:play("idle")
             topAnim:play("idle")
             customers = {
-                CharacterFactory.create(),
-                CharacterFactory.create(),
-                CharacterFactory.create(),
-                CharacterFactory.create(),
-                CharacterFactory.create(),
-                CharacterFactory.create(),
-                CharacterFactory.create(),
-                CharacterFactory.create()
+                createRandomCustomer(),
+                createRandomCustomer(),
+                createRandomCustomer(),
+                createRandomCustomer(),
+                createRandomCustomer(),
+                createRandomCustomer(),
+                createRandomCustomer(),
+                createRandomCustomer()
             }
         end,
         onUpdate = function(dt)
@@ -118,6 +164,20 @@ local function initStateMachine()
     })
 end
 
+function Range(n)
+    local t = {}
+    for i = 1, n do
+        t[i] = i
+    end
+    return t
+end
+
+local traitStyles = {
+    Positive = "Trait_positive", -- 녹색/금색 계열
+    Negative = "Trait_negative", -- 빨간색 계열
+    Neutral = "Trait"    -- 회색/흰색 계열
+}
+
 local function initUI()
     mainPanel = UIFactory.createDraggablePanel("Default", 300, 700, 400, 300)
     mainPanel:addChild(UIFactory.createButton("Default", 210, 10, 180, 50, "출발", function()
@@ -155,7 +215,6 @@ local function initUI()
     UIManager:close(settingPanel)
 
     customerPanel = UIFactory.createDraggablePanel("Default", 300, 700, 320, 350)
-
     for i = 1, 4 do
         customerPanel:addChild(UIElement.new(0, (i - 1) * 70 + 20, 300, 70))
     end
@@ -163,7 +222,7 @@ local function initUI()
         self.currentIdx = idx
         for i = 1, 4 do
             local customer = customers[idx + i - 1]
-            local ctx = customerPanel:at(i)
+            local ctx = self:at(i)
             
             ctx.children = {}
 
@@ -172,10 +231,10 @@ local function initUI()
                 customer:draw(x - 48, y - 20, 160, 128)
             end))
 
-            ctx:addChild(UIFactory.createText(100, 0, "김철수"))
-            ctx:addChild(UIFactory.createText(100, 26, "안산 | 45G", "Small"))
-            ctx:addChild(UIFactory.createText(100, 44, "애주가", "Trait"))
-            ctx:addChild(UIFactory.createText(160, 44, "술꾼", "Trait_negative"))
+            ctx:addChild(UIFactory.createText(100, 0, customer.name))
+            ctx:addChild(UIFactory.createText(100, 26, customer.dest .. " | " .. customer.fee .. "G", "Small"))
+            ctx:addChild(UIFactory.createText(100, 44, customer.trait1.name, traitStyles[customer.trait1.type]))
+            ctx:addChild(UIFactory.createText(160, 44, customer.trait2.name, traitStyles[customer.trait2.type]))
             ctx:addChild(UIFactory.createButton("Default", 210, 20, 80, 40,
             customer.isBoarding and "환불" or "승차", function()
                 print("boarding clicked")
@@ -187,6 +246,7 @@ local function initUI()
         end
     end
     customerPanel.onInit = function (self)
+        self:at(5):setItems(Range(#customers - 3))
         self:onSetScroll(1)
     end
 
