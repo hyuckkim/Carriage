@@ -21,6 +21,14 @@ function UIElement:getAbsolutePos()
     return ax, ay
 end
 
+function UIElement:at(idx)
+    return self.children[idx]
+end
+
+function UIElement:len()
+    return #self.children
+end
+
 function UIElement:isHit(mx, my)
     local ax, ay = self:getAbsolutePos()
     return mx >= ax and mx <= ax + self.w and my >= ay and my <= ay + self.h

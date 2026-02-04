@@ -6,12 +6,18 @@ function g.rect(x, y, w, h) end
 function g.color(r, g, b, a) end
 function g.text(font, text, x, y) end
 
----@reutrn number
----@return number
+---@reutrn number w
+---@return number h
 function g.fontSize(id, text) end
-function g.image(imgId, x, y, w, h, sx, sy, sw, sh) end
+
+function g.image(imgId, x, y, w, h, sx, sy, sw, sh, flipX) end
 function g.setClip(x, y, w, h) end
 function g.resetClip() end
+
+function g.push() end
+function g.pop() end
+function g.translate(x, y) end
+function g.scale(sx, sy, ox, oy) end
 
 ---@class is
 is = {}

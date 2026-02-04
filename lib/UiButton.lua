@@ -5,7 +5,7 @@ local UIPanel = require("lib.UIPanel")
 local UIButton = setmetatable({}, { __index = UIPanel })
 UIButton.__index = UIButton
 
-function UIButton.new(x, y, w, h, skins, text, onClick)
+function UIButton.new(x, y, w, h, skins, text, onClick, color)
 ---@class UIButton
     local self = UIPanel.new(x, y, w, h)
 
@@ -14,6 +14,7 @@ function UIButton.new(x, y, w, h, skins, text, onClick)
     self:setText(text or "")
     self.callback = onClick
     self.state = "normal"
+    self.color = color or { 255, 255, 255 }
     return self
 end
 function UIButton:setText(newText)
@@ -42,6 +43,7 @@ function UIButton:draw()
     UIPanel.draw(self)
 
     -- 텍스트 드로우 (가운데 정렬)
+    g.color(self.color[1], self.color[2], self.color[3])
     if self.text and #self.text > 0 then
         local ax, ay = self:getAbsolutePos()
         local tx = ax + (self.w - self.tw) / 2
