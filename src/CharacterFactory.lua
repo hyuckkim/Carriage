@@ -176,40 +176,60 @@ local function pickSkinInfo(gender, categoryName)
 end
 
 function CharacterFactory.create(gender)
+    -- 1. 성별 및 외형 데이터 준비
     gender = gender or (math.random() > 0.5 and "male" or "female")
-    
     local categories = {"skin", "top", "bottom", "hair", "footage", "hat"}
     local layerIds = {}
     local recipe = { gender = gender, parts = {} }
 
+    -- 2. 비주얼 레이어 생성 (기존 로직)
     for i, cat in ipairs(categories) do
         local info = pickSkinInfo(gender, cat)
         if info then
-            -- 경로가 실제 존재하는지, res.load가 성공하는지 체크
             local imgId = res.image(info.path) 
-            
             if imgId then
                 table.insert(layerIds, imgId)
                 recipe.parts[cat] = { grade = info.grade, file = info.file, id = imgId }
-            else
-                print(string.format("[Warn] Failed to load image: %s", info.path))
             end
         end
     end
     
-    -- [방어 로직] 최소한 피부(레이어 1개 이상)는 있어야 함
-    if #layerIds == 0 then
-        print("[Error] CharacterFactory: No layers created for " .. gender)
-        return nil -- 여기서 nil을 던지면 main.lua에서 체크해야 함
-    end
+    if #layerIds == 0 then return nil end
 
+    -- 3. 애니메이션 객체 생성
     local char = Anim.new(layerIds, 80, 64, 10)
     char.recipe = recipe
-    
     char:add("idle", {0, 1, 2, 3, 4})
     char:add("walk", {10, 11, 12, 13, 14, 15, 16, 17})
     char:play("idle")
+
+    -- 4. 게임 데이터 주입 (기존 createRandomCustomer 로직 통합)
+    local firstNames = {"김", "이", "박", "최", "정", "강", "조", "윤"}
+    local lastNames = {"철수", "영희", "춘자", "덕배", "광식", "지혜", "칠득", "소희"}
+    local destinations = {"안산", "한양", "강릉", "부산", "평양", "수원", "강화"}
     
+    local allTraits = {
+        { name = "애주가", type = "Positive" }, { name = "부자", type = "Positive" },
+        { name = "정직함", type = "Positive" }, { name = "쾌활함", type = "Positive" },
+        { name = "술꾼", type = "Negative" }, { name = "구두쇠", type = "Negative" },
+        { name = "까칠함", type = "Negative" }, { name = "수다쟁이", type = "Negative" },
+        { name = "평범함", type = "Neutral" }, { name = "여행객", type = "Neutral" },
+        { name = "학자", type = "Neutral" }, { name = "짐꾼", type = "Neutral" }
+    }
+
+    char.name = firstNames[math.random(#firstNames)] .. lastNames[math.random(#lastNames)]
+    char.dest = destinations[math.random(#destinations)]
+    char.fee = math.random(2, 15) * 10
+    
+    -- 특성 추출
+    local t1 = math.random(#allTraits)
+    local t2 = math.random(#allTraits)
+    while t1 == t2 do t2 = math.random(#allTraits) end
+    
+    char.trait1 = allTraits[t1]
+    char.trait2 = allTraits[t2]
+    char.isBoarding = false
+
     return char
 end
 

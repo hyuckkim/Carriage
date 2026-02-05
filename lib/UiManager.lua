@@ -66,7 +66,7 @@ function UIManager:dispatchClick(x, y, button)
     return false
 end
 
-function UIManager:open(component)
+function UIManager:open(component, ...)
     if not component then return end
     
     -- 1. 일단 보이게 설정
@@ -81,7 +81,7 @@ function UIManager:open(component)
         end
     end
     if component.onInit then
-        component:onInit()
+        component:onInit(...)
     end
 end
 

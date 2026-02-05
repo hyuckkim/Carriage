@@ -9,6 +9,7 @@ function UIElement.new(x, y, w, h)
     self.visible = true
     self.children = {}
     self.parent = nil
+    self.updateState = nil
     return self
 end
 
