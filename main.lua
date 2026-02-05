@@ -26,19 +26,19 @@ function Init()
     UIManager:add("settingPanel", require("src.UI.settingPanel")())
     UIManager:add("customerPanel", require("src.UI.customerPanel")())
 
-    Datastore.fsm:transition("idle")
+    Datastore.get('fsm'):transition("idle")
 end
 
 function Update(dt)
-    Datastore.fsm:update(dt)
+    Datastore.get('fsm'):update(dt)
     UIManager:update(dt)
 end
 
 function Draw()
     g.push()
-        local size = Datastore.settings.mainSize
+        local size = Datastore.get('settings').mainSize
         g.scale(size, size, 0, sh)
-        Datastore.fsm:draw()
+        Datastore.get('fsm'):draw()
     g.pop()
     UIManager:draw()
 end

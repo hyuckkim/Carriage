@@ -4,7 +4,7 @@ local UIElement = require("lib.UI.UIElement")
 local UIViewport = require ("lib.UI.UIViewport")
 
 local UIFactory = require("src.UiFactory")
-local customers = require("src.Datastore").customers
+local Datastore = require("src.Datastore")
 
 local traitStyles = {
     Positive = "Trait_positive", -- 녹색/금색 계열
@@ -23,7 +23,7 @@ return function ()
     panel.onSetScroll = function (self, idx)
         self.currentIdx = idx
         for i = 1, 4 do
-            local customer = customers[idx + i - 1]
+            local customer = Datastore.get('customers')[idx + i - 1]
             local ctx = self:at(i)
             
             ctx.children = {}
@@ -39,7 +39,6 @@ return function ()
             ctx:addChild(UIFactory.createText(160, 44, customer.trait2.name, traitStyles[customer.trait2.type]))
             ctx:addChild(UIFactory.createButton("Default", 210, 20, 80, 40,
             customer.isBoarding and "환불" or "승차", function()
-                print("boarding clicked")
                 customer.isBoarding = not customer.isBoarding
                 self:onSetScroll(idx)
             end))
@@ -48,7 +47,7 @@ return function ()
         end
     end
     panel.onInit = function (self)
-        self:at(5):setItems(Range(#customers - 3))
+        self:at(5):setItems(Range(#Datastore.get('customers') - 3))
         self:onSetScroll(1)
     end
 
