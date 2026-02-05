@@ -1,5 +1,10 @@
 local Datastore = {
+    settings = {
+        mainSize = 1.5,
+    },
     customers = {},
+    ---@class StateMachine
+    fsm = nil,
 }
 
 local function replaceContents(target, source)

@@ -1,9 +1,20 @@
+---@class StateMachine
 local StateMachine = {}
 StateMachine.__index = StateMachine
 
+---@class State
+---@field onEnter? fun(...)
+---@field onUpdate? fun(dt)
+---@field onDraw? fun()
+---@field onExit? fun()
+---@
 function StateMachine.new()
+    ---@class StateMachine
     local obj = {
+        ---@type table<string, State>
         states = {},
+
+        ---@type State|nil
         current = nil,
         currentStateName = nil
     }
