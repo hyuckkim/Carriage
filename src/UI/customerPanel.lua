@@ -16,7 +16,7 @@ return function ()
     ---@class CustomerPanel: DraggablePanel
     local panel = UIFactory.createDraggablePanel("Default", 300, 700, 320, 350)
     for i = 1, 4 do
-        panel:addChild(UIElement.new(0, (i - 1) * 70 + 20, 300, 70))
+        panel:addChild(UIElement.new(0, (i - 1) * 70 + 20))
     end
     panel.currentIdx = 1
 

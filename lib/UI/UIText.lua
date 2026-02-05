@@ -11,6 +11,7 @@ function UIText.new(x, y, str, fontId, color)
     self.fontId = fontId or 0
     self.color = color or {255, 255, 255} -- 기본 흰색 {R, G, B}
     self.align = "left" -- "left", "center", "right"
+    self.passthrough = true
     
     self:setText(str or "")
     

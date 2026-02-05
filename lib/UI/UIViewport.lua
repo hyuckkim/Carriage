@@ -13,6 +13,7 @@ function UIViewport.new(x, y, w, h, drawCallback)
     ---@class UIViewport
     local self = setmetatable(UIElement.new(x, y, w, h), UIViewport)
     self.onDraw = drawCallback
+    self.passthrough = true
     return self
 end
 

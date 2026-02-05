@@ -9,6 +9,7 @@ function UIElement.new(x, y, w, h)
     self.visible = true
     self.children = {}
     self.parent = nil
+    self.passthrough = false
     self.updateState = nil
     return self
 end
@@ -40,12 +41,10 @@ function UIElement:addChild(child)
     child.parent = self
 end
 
--- 공통 로직: 자식부터 역순으로 업데이트/드로우
 function UIElement:update(dt, mx, my, ml, consumed)
     if not self.visible then return consumed end
     local childConsumed = false
-    
-    -- 자식들에게 전파 (역순)
+
     for i = #self.children, 1, -1 do
         if self.children[i]:update(dt, mx, my, ml, consumed or childConsumed) then
             childConsumed = true
@@ -53,7 +52,7 @@ function UIElement:update(dt, mx, my, ml, consumed)
     end
     
     local myHit = false
-    if not consumed and not childConsumed then
+    if not consumed and not childConsumed and not self.passthrough then
         myHit = self:isHit(mx, my)
     end
     
@@ -71,17 +70,16 @@ function UIElement:draw()
 end
 
 function UIElement:dispatchClick(x, y, button)
-    if not self.visible or not self:isHit(x, y) then return false end
-
-    -- 자식들에게 역순으로 전파 (위에 있는 자식이 먼저 클릭을 먹음)
+    if not self.visible then return false end -- 안 보이면 패스
     for i = #self.children, 1, -1 do
         if self.children[i].dispatchClick and self.children[i]:dispatchClick(x, y, button) then
-            return true
+            return true -- 자식 중 누군가 클릭을 처리함
         end
     end
+    if not self.passthrough and self:isHit(x, y) then
+        return true
+    end
 
-    -- 자식이 안 먹었을 때, Element 자체는 딱히 할 일이 없으므로 
-    -- '내 영역 안이다'라는 의미로 true만 반환 (클릭 가로채기)
-    return true 
+    return false
 end
 return UIElement

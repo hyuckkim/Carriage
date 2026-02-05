@@ -7,7 +7,7 @@ DraggablePanel.__index = DraggablePanel
 ---@override
 function DraggablePanel.new(x, y, w, h, np)
     local self = setmetatable(UIPanel.new(x, y, w, h), DraggablePanel)
-    self.np = np -- 배경 나인패치
+    self.np = np
     self.isDragging = false
     self.offsetX = 0
     self.offsetY = 0
