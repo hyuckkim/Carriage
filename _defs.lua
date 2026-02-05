@@ -18,6 +18,7 @@ function g.push() end
 function g.pop() end
 function g.translate(x, y) end
 function g.scale(sx, sy, ox, oy) end
+function g.clip(x, y, w, h) end
 
 ---@class is
 is = {}
