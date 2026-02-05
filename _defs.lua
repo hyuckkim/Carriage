@@ -39,6 +39,8 @@ res = {}
 function res.image(path) end
 function res.font(name, size) end
 function res.fontFile(path, name, size) end
+function res.json(path) end
+function res.jsonAsync(path) end
 
 ---@class sys
 sys = {}
