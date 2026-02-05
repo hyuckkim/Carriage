@@ -1,7 +1,7 @@
-local UIButton = require("lib.UIButton")
 local NinePatch = require("lib.ninepatch")
-local UIPanel   = require("lib.UIPanel")
-local DraggablePanel = require("lib.DraggablePanel")
+local UIButton = require("lib.UI.UIButton")
+local UIPanel   = require("lib.UI.UIPanel")
+local DraggablePanel = require("lib.UI.DraggablePanel")
 local UIFactory = {}
 
 -- 미리 정의된 UI 스킨들 (나인패치 설정 모음)
@@ -77,7 +77,7 @@ function UIFactory.createSlider(x, y, w, h, items, onChange, default)
     
     -- 1. 방향에 따른 클래스 로드
     if isVertical then
-        local UIVerticalSlider = require("lib.UIVerticalSlider")
+        local UIVerticalSlider = require("lib.UI.UIVerticalSlider")
         slider = UIVerticalSlider.new(x, y, w, h)
         
         -- 세로형 기본 스킨 (트랙은 9패치로 늘리고, 핸들은 중앙 정렬)
@@ -87,7 +87,7 @@ function UIFactory.createSlider(x, y, w, h, items, onChange, default)
         -- 가로폭(w)에 맞춰 핸들 너비를 잡고, 높이는 24 정도로 설정
         slider:setSkins(trackNP, handleNP, 16, 24)
     else
-        local UIHorizontalSlider = require("lib.UIHorizontalSlider")
+        local UIHorizontalSlider = require("lib.UI.UIHorizontalSlider")
         slider = UIHorizontalSlider.new(x, y, w, h)
         
         local trackNP = NinePatch.new(imgId, 208, 149, 64, 7, 9, 9, 2, 3)
@@ -142,7 +142,7 @@ UIFactory.Fonts = {
 
 function UIFactory.createText(x, y, str, styleName)
     local style = UIFactory.Fonts[styleName] or UIFactory.Fonts.Default
-    local UIText = require("lib.UIText")
+    local UIText = require("lib.UI.UIText")
     
     local txt = UIText.new(x, y, str, style.fontId, style.color)
     txt.align = style.align

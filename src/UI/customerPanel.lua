@@ -1,7 +1,7 @@
 local UIManager = require("lib.UIManager")
 
-local UIElement = require("lib.UIElement")
-local UIViewport = require ("lib.UIViewport")
+local UIElement = require("lib.UI.UIElement")
+local UIViewport = require ("lib.UI.UIViewport")
 
 local UIFactory = require("src.UiFactory")
 local customers = require("src.Datastore").customers

@@ -1,4 +1,4 @@
-local UIElement = require("lib.UIElement")
+local UIElement = require("lib.UI.UIElement")
 ---@class UIPanel: UIElement
 local UIPanel = setmetatable({}, { __index = UIElement })
 UIPanel.__index = UIPanel

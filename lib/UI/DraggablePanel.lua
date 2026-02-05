@@ -1,5 +1,5 @@
 -- lib/DraggablePanel.lua
-local UIPanel = require("lib.UIPanel")
+local UIPanel = require("lib.UI.UIPanel")
 ---@class DraggablePanel : UIPanel
 local DraggablePanel = setmetatable({}, { __index = UIPanel })
 DraggablePanel.__index = DraggablePanel

@@ -1,4 +1,4 @@
-local UIElement = require("lib.UIElement")
+local UIElement = require("lib.UI.UIElement")
 ---@class UIHorizontalSlider : UIElement
 local UIHorizontalSlider = setmetatable({}, { __index = UIElement })
 UIHorizontalSlider.__index = UIHorizontalSlider

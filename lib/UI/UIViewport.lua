@@ -1,4 +1,4 @@
-local UIElement = require("lib.UIElement")
+local UIElement = require("lib.UI.UIElement")
 
 ---@class UIViewport: UIElement
 local UIViewport = setmetatable({}, { __index = UIElement })
