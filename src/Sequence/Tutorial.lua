@@ -1,11 +1,13 @@
 local ObjectManager = require("lib.ObjectManager")
 local Datastore = require("src.Datastore")
 local Anims = require("src.Anims")
+local Character = require("src.Object.character")
+local Customer = require("src.Object.customer")
 
 local Tutorial = {
     is_active = false,
     current_index = 0,
-    elapsed_time = 0,
+    timer = nil,
     wx = 0, wy = 0
 }
 
@@ -44,17 +46,30 @@ function Tutorial:Init(wagonX, wagonY)
     self.wx, self.wy = wagonX, wagonY
     self.is_active = true
     self.current_index = 1
-    self.elapsed_time = 0
 
-    ObjectManager:Add(Anims.Advisor(), 'advisor', -32, 32, {
-        layer = 2, sayOX = 32, sayOY = 20, defaultAnim = 'idle'
-    })
-    -- 초기 위치 설정 (조언자는 마차 근처 대기)
-    ObjectManager:Move('advisor', wagonX + 160, wagonY)
+    local advisor = Character.new('advisor', Anims.Advisor())
+    advisor.ox, advisor.oy = -32, 32
+    advisor.sayOX, advisor.sayOY = 32, 20
 
-    -- 2. 첫 번째 이벤트 실행
+    ObjectManager:Register(advisor)
+    advisor:Move(wagonX + 160, wagonY)
     self:Execute(TutorialScript[self.current_index])
 end
+
+function Tutorial:Draw()
+end
+
+function Tutorial:Next()
+    self.current_index = self.current_index + 1
+    local next_event = TutorialScript[self.current_index]
+    
+    if next_event then
+        self:Execute(next_event)
+    else
+        self:Finish() -- 스크립트가 끝났을 때 정리하는 함수
+    end
+end
+
 
 function Tutorial:Update(dt)
     if not self.is_active then return end
@@ -71,44 +86,40 @@ function Tutorial:Update(dt)
     end
 end
 
-function Tutorial:Draw()
-end
-
-function Tutorial:Next()
-    self.current_index = self.current_index + 1
-    local next_event = TutorialScript[self.current_index]
-    
-    if next_event then
-        self:Execute(next_event)
-    else
-        self:Finish() -- 스크립트가 끝났을 때 정리하는 함수
+local function clearAllSay()
+    for _, obj in pairs(ObjectManager:GetAll('StopSay')) do
+        obj:StopSay()
     end
 end
+
 function Tutorial:Execute(event)
-    if not event then 
-        self:Finish()
-        return 
-    end
+    if not event then self:Finish(); return end
 
-    local target = event.key
+    -- 객체 직접 찾기
+    local obj = ObjectManager:Get(event.key)
     self.timer = event.duration
 
     if event.action == "walk" then
-        -- 등장 씬: 시작 위치로 순간이동 후 목표 위치로 걷기
-        ObjectManager:Move(target, event.from, self.wy)
-        ObjectManager:Play(target, 'walk')
-        ObjectManager:Move(target, event.to, self.wy, event.movetime or 0, 'idle')
+        if obj then
+            obj:Move(event.from, self.wy) -- 순간이동
+            obj.anim:play('walk')
+            -- 이제 movetime 대신 Speed를 쓰거나, 내부 Move 로직을 활용
+            obj:Move(event.to, self.wy, (event.movetime or 0), 'idle')
+        end
 
     elseif event.action == "say" then
-        -- 말하기: 기존의 다른 말풍선은 다 끄고 이번 타겟만 말함
-        ObjectManager:ClearAllSay()
-        ObjectManager:Say(target, event.text, event.style)
+        clearAllSay() -- 전체 대사 정리
+        if obj then obj:Say(event.text, event.style) end
 
     elseif event.action == "emote" then
-        ObjectManager:ClearAllSay()
-        ObjectManager:Emote(target, event.emotion)
-        self.elapsed_time = 0
+        clearAllSay()
+        if obj then obj:Emote(event.emotion) end
+        
+    elseif event.action == "wait" then
+        -- 아무것도 안 하고 timer만 작동
     end
+
+    -- 즉시 다음으로 넘어가는 경우 처리
     if self.timer == 0 then
         self.timer = nil
         self:Next()
@@ -117,25 +128,19 @@ end
 
 function Tutorial:OnClick(x, y)
     if not self.is_active then return end
-
-    -- 1. 현재 자동 진행 중(duration이 남음)이라면 클릭 무시
     if self.timer and self.timer > 0 then
         return
     end
 
-    -- 2. (선택 사항) 만약 텍스트가 아직 타이핑 중이라면?
-    -- 글자를 한 번에 다 보여주는 스킵 기능만 수행하고 Next는 안 함
     local current_event = TutorialScript[self.current_index]
     if current_event and current_event.action == "say" then
         local obj = ObjectManager.objects[current_event.key]
         if obj and obj.say and obj.say.charIndex < utf8.len(obj.say.fullText) then
             obj.say.charIndex = utf8.len(obj.say.fullText)
             obj.say.text = obj.say.fullText
-            return -- 텍스트만 채우고 끝
+            return
         end
     end
-
-    -- 3. 위 조건들에 해당하지 않으면 다음으로 진행
     self:Next()
 end
 
@@ -152,31 +157,32 @@ local AdvisorPattern = {
 function Tutorial:Finish()
     self.is_active = false
     self.timer = nil
-    self.current_index = 0
     
-    ObjectManager:ClearAllSay()
+    clearAllSay()
 
-    -- 1. ObjectManager에 있는 실제 '객체'를 가져옵니다.
-    -- (.anim이 아니라 객체 자체에 데이터를 넣는 것이 나중에 관리하기 편합니다)
-    local advisor = ObjectManager.objects['advisor']
-    
-    if advisor then
-        -- 2. 객체에 직접 손님 데이터 주입
-        advisor.name = "박덕배"
-        advisor.dest = "한양"
-        advisor.fee = 150
-        advisor.trait1 = { name = "애주가", type = "Positive" }
-        advisor.trait2 = { name = "쾌활함", type = "Positive" }
-        advisor.isBoarding = false
+    local oldAdvisor = ObjectManager:Get('advisor')
+    if oldAdvisor then
+        -- 손님 데이터 준비
+        local customerData = {
+            name = "박덕배",
+            destination = "한양",
+            budget = 150,
+            traits = { "애주가", "쾌활함" }
+        }
         
-        -- 3. 이 객체가 '손님'임을 나타내는 플래그 (ObjectManager:GetCustomers에서 필터링용)
-        advisor.is_npc = true
-    end
+        local advisor = Customer.new('advisor', oldAdvisor.anim, customerData)
+        advisor.x, advisor.y = oldAdvisor.x, oldAdvisor.y
+        advisor.ox, advisor.oy = oldAdvisor.ox, oldAdvisor.oy
+        advisor.sayOX, advisor.sayOY = oldAdvisor.sayOX, oldAdvisor.sayOY
 
-    -- 4. 이제 인자 없이 transition (UI는 열릴 때 ObjectManager에서 직접 긁어감)
-    Datastore.get('fsm'):transition('idle', { advisor })
-    
-    ObjectManager:InjectPattern('advisor', AdvisorPattern, true)
+        ObjectManager:Remove('advisor')
+        ObjectManager:Register(advisor)
+        
+        advisor:setPattern(AdvisorPattern, true)
+
+        -- FSM 전환
+        Datastore.get('fsm'):transition('idle', { advisor })
+    end
 end
 
 return Tutorial

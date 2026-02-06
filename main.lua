@@ -27,8 +27,6 @@ function Init()
     UIManager:add("settingPanel", require("src.UI.settingPanel")())
     UIManager:add("customerPanel", require("src.UI.customerPanel")())
 
-    ObjectManager:Init(sw, sh)
-
     Datastore.get('fsm'):transition("prologue")
     Datastore.registerTask('map', res.jsonAsync('map.json'))
 end
@@ -61,9 +59,16 @@ end
 function OnMouseDown(x, y)
 end
 function OnMouseUp(x, y)
+    -- UI는 보통 화면 고정(Overlay)이므로 그대로 처리
     local clicked = UIManager:dispatchClick(x, y, "left")
+    
     if not clicked then
-        Datastore.get('fsm'):click(x, y)
+        -- 월드 좌표로 보정 (Scale이 적용된 월드를 클릭할 때)
+        local size = Datastore.get('settings').mainSize
+        local worldX = x / size
+        local worldY = (y - sh) / size + sh -- scale의 기준점(0, sh)에 따른 보정
+        
+        Datastore.get('fsm'):click(worldX, worldY)
     end
 end
 function OnRightMouseDown(x, y)

@@ -1,8 +1,10 @@
+---@class Anim
 local Anim = {}
 Anim.__index = Anim
 
 -- imgIds: { "skin_id", "cloth_id", "hair_id" } 처럼 테이블로 받습니다.
 function Anim.new(imgIds, frameW, frameH, cols)
+    ---@class Anim
     local obj = {
         layers = (type(imgIds) == "table") and imgIds or { imgIds }, -- 무조건 테이블로 변환
         fw = frameW, fh = frameH,

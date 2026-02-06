@@ -1,76 +1,76 @@
 local StateMachine = require("lib.statemachine")
 local Anims = require("src.Anims")
-local createRandomCustomer = require("src.CharacterFactory").create
+local CharacterFactory = require("src.CharacterFactory")
 local DataStore = require("src.Datastore")
 local UIManager = require("lib.UIManager")
 local ObjectManager = require("lib.ObjectManager")
 local Tutorial = require("src.Sequence.Tutorial")
+local Character = require("src.Object.character")
 
 local mainStateMachine = {}
 local fsm
-
 local workthrough = 0
 
 function mainStateMachine.init(self, wagonX, wagonY)
     fsm = StateMachine.new()
     fsm:addState("prologue", {
         onEnter = function()
-            ObjectManager:Add(Anims.wagon(), 'wagon', 1, 0, {
-                layer = 0,
-                anim = 'idle'
-            })
-            ObjectManager:Add(Anims.chara(), 'chara', -32, 32, {
-                layer = 2, sayOX = 32, sayOY = 20, defaultAnim = 'idle'
-            })
-            ObjectManager:Move('wagon', wagonX, wagonY)
+            -- 마차 생성 (일반 Object로 생성하거나 Character로 생성 가능)
+            local wagon = Character.new('wagon', Anims.wagon())
+            wagon:Move(wagonX, wagonY)
+            wagon:act('idle')
+            ObjectManager:Register(wagon)
 
+            -- 주인공 생성 (Character 클래스 활용)
+            local chara = Character.new('chara', Anims.chara())
+            chara.ox, chara.oy = -32, 32
+            chara.sayOX, chara.sayOY = 32, 20
+            ObjectManager:Register(chara)
+
+            -- 튜토리얼 시작
             Tutorial:Init(wagonX, wagonY)
         end,
-        onDraw = function()
-            Tutorial:Draw()
-        end,
-        onUpdate = function(dt)
-            Tutorial:Update(dt)
-        end,
-        onClick = function(x, y)
-            Tutorial:OnClick(x, y)
-        end
+        onUpdate = function(dt) Tutorial:Update(dt) end,
+        onDraw   = function()   Tutorial:Draw()   end,
+        onClick  = function(x, y) Tutorial:OnClick(x, y) end
     })
     fsm:addState("idle", {
-        onEnter = function(customers)
-            -- 개별 anim:play가 아니라 ObjectManager에게 명령
-            ObjectManager:Play('wagon', 'idle')
-            ObjectManager:Play('chara', 'idle')
-
-            if not customers then
-                local newCustomers = {}
+        onEnter = function(initialCustomers)
+            if not initialCustomers then
                 for i = 1, 8 do
-                    createRandomCustomer()
+                    CharacterFactory.createCustomer()
                 end
-                DataStore.update("customers", newCustomers)
             end
         end,
-        onDraw = function()
-            -- 여기선 더이상 wagonAnim:draw()를 부르지 않음 (main에서 그리니까)
-        end,
-        onClick = function() UIManager:open('mainPanel') end
+        onClick = function() 
+            UIManager:open('mainPanel')
+        end
     })
 
     fsm:addState("walk", {
         onEnter = function() 
             ObjectManager:Play('wagon', 'walk')
             workthrough = 0
+            
+            local passengers = ObjectManager:GetAll(function(obj) 
+                return obj.is_customer and obj.isBoarding 
+            end)
+            for _, p in ipairs(passengers) do
+                p.visible = false
+            end
         end,
         onUpdate = function(dt)
             workthrough = workthrough + dt
-            if workthrough >= 5000 then fsm:transition('idle') end
+            if workthrough >= 5000 then
+                fsm:transition('idle')
+            end
         end,
         onDraw = function()
-            -- 진행바 같은 UI 요소만 별도로 그림
+            -- 진행바 UI
             g.color(0, 0, 0)
             g.rect(wagonX + 10, wagonY - 50, 200, 5)
             g.color(255, 255, 255)
-            g.rect(wagonX + 10, wagonY - 50, 200 / 5000 * workthrough, 5)
+            g.rect(wagonX + 10, wagonY - 50, (200 / 5000) * workthrough, 5)
         end
     })
 

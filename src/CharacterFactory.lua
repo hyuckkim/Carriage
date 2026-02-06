@@ -1,6 +1,7 @@
 local CharacterFactory = {}
 local Anim = require('lib.anim')
 local ObjectManager = require("lib.ObjectManager")
+local Customer = require('src.Object.customer')
 
 local SkinAssets = {
     base_path = "assets/generate/",
@@ -176,40 +177,29 @@ local function pickSkinInfo(gender, categoryName)
     return nil
 end
 
-function CharacterFactory.create(gender, key)
-    -- 1. 성별 및 외형 데이터 준비
+function CharacterFactory.createCustomer(gender, key)
     gender = gender or (math.random() > 0.5 and "male" or "female")
     local categories = {"skin", "top", "bottom", "hair", "footage", "hat"}
     local layerIds = {}
-    local recipe = { gender = gender, parts = {} }
+    local visualRecipe = { gender = gender, parts = {} }
 
-    -- 2. 비주얼 레이어 생성 및 이미지 로드
     for i, cat in ipairs(categories) do
-        local info = pickSkinInfo(gender, cat) -- 기존 외형 선택 로직
+        local info = pickSkinInfo(gender, cat)
         if info then
-            local imgId = res.image(info.path) 
+            local imgId = res.image(info.path)
             if imgId then
                 table.insert(layerIds, imgId)
-                recipe.parts[cat] = { grade = info.grade, file = info.file, id = imgId }
+                visualRecipe.parts[cat] = { grade = info.grade, file = info.file, id = imgId }
             end
         end
     end
-    
-    -- 레이어 로드 실패 시 예외 처리
     if #layerIds == 0 then return nil end
 
-    -- 3. 애니메이션(Anim) 객체 생성
     local anim = Anim.new(layerIds, 80, 64, 10)
     anim:add("idle", {0, 1, 2, 3, 4})
     anim:add("walk", {10, 11, 12, 13, 14, 15, 16, 17})
     anim:play("idle")
 
-    -- 4. ObjectManager에 등록 (월드 객체화)
-    -- key가 없으면 랜덤 생성, 있으면 지정된 key 사용 (예: 'advisor')
-    local objKey = key or ("cust_" .. math.random(1000, 9999))
-    local char = ObjectManager:Add(objKey, anim)
-
-    -- 5. 게임 플레이 데이터 주입
     local firstNames = {"김", "이", "박", "최", "정", "강", "조", "윤"}
     local lastNames = {"철수", "영희", "춘자", "덕배", "광식", "지혜", "칠득", "소희"}
     local destinations = {"안산", "한양", "강릉", "부산", "평양", "수원", "강화"}
@@ -223,27 +213,27 @@ function CharacterFactory.create(gender, key)
         { name = "학자", type = "Neutral" }, { name = "짐꾼", type = "Neutral" }
     }
 
-    -- 객체 속성 설정
-    char.name = firstNames[math.random(#firstNames)] .. lastNames[math.random(#lastNames)]
-    char.dest = destinations[math.random(#destinations)]
-    char.fee = math.random(2, 15) * 10
-    char.recipe = recipe
-    char.is_npc = true      -- ObjectManager에서 손님만 골라낼 때 사용
-    char.isBoarding = false -- 마차 탑승 여부
-    
-    -- 특성 2개 추출 (중복 제거)
     local t1 = math.random(#allTraits)
     local t2 = math.random(#allTraits)
     while t1 == t2 do t2 = math.random(#allTraits) end
+
+    local customerData = {
+        name = firstNames[math.random(#firstNames)] .. lastNames[math.random(#lastNames)],
+        destination = destinations[math.random(#destinations)],
+        budget = math.random(2, 15) * 10,
+        traits = { allTraits[t1].name, allTraits[t2].name },
+        recipe = visualRecipe,
+    }
+
+    local objKey = key or ("cust_" .. math.random(1000, 9999))
+    local customer = Customer.new(objKey, anim, customerData)
+
+    customer.x = 400
+    customer.y = 300
     
-    char.trait1 = allTraits[t1]
-    char.trait2 = allTraits[t2]
+    ObjectManager:Register(customer)
 
-    -- 초기 위치 설정 (마차 옆이나 정류장 대기석 등으로 설정 가능)
-    char.x = 400 
-    char.y = 300
-
-    return char -- 최종적으로 등록된 객체 반환
+    return customer
 end
 
 return CharacterFactory
