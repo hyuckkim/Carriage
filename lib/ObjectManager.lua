@@ -181,6 +181,22 @@ function ObjectManager:Move(key, targetX, targetY, time, onFinishAnim)
     end
 end
 
+function ObjectManager:MoveBySpeed(key, targetX, targetY, speed, onFinishAnim)
+    local obj = self.objects[key]
+    if not obj or speed <= 0 then return end
+
+    -- 현재 위치와 목표 위치 사이의 거리 계산 (피타고라스)
+    local dx = targetX - obj.x
+    local dy = targetY - obj.y
+    local distance = math.sqrt(dx*dx + dy*dy)
+
+    -- 거리 / 속도 = 걸리는 시간
+    local travelTime = distance / speed
+
+    -- 기존 Move 함수를 재활용 (시간을 넘겨줌)
+    self:Move(key, targetX, targetY, travelTime, onFinishAnim)
+end
+
 function ObjectManager:Say(key, text, style, duration)
     local obj = self.objects[key]
     if not obj then return end
