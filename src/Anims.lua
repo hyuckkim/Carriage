@@ -22,13 +22,14 @@ end
 function Anims.chara()
     local anim = Anim.new(res.image("assets/wagon_woman.png"), 64, 64, 8)
     anim:add("idle", {0, 1, 2, 3, 4}, 100, true)
-    anim:add("walk", {8, 9, 10, 11, 12, 13, 14, 15}, 100, true)
+    anim:add("walk", {8, 9, 10, 11, 12, 13, 14, 15}, 66, true)
 
     return anim
 end
 function Anims.Advisor()
     local anim = Anim.new(res.image("assets/males.png"), 64, 64, 11)
-    anim:add("idle", {12, 23, 34}, 220, true)
+    anim:add("idle", {12, 23, 34, 45, 56}, 220, true)
+    anim:add("walk", {67, 78, 89, 100, 111, 122, 133, 144}, 66, true)
 
     return anim
 end

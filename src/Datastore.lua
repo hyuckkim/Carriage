@@ -2,7 +2,6 @@ local Datastore = {
     -- 모든 최종 데이터(동기 로드된 설정 + 비동기 완료된 결과)를 보관
     cache = {
         settings = { mainSize = 1.5 },
-        customers = {},
     },
     -- 현재 진행 중인 비동기 작업들
     tasks = {},

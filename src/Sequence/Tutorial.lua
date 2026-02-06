@@ -1,6 +1,6 @@
 local ObjectManager = require("lib.ObjectManager")
 local Datastore = require("src.Datastore")
-local Anims = require("src.Anims") -- 아까 만든 애니메이션 생성 모듈
+local Anims = require("src.Anims")
 
 local Tutorial = {
     is_active = false,
@@ -9,18 +9,15 @@ local Tutorial = {
     wx = 0, wy = 0
 }
 
--- 스크립트 데이터는 그대로 유지
 local TutorialScript = {
     { duration = 0, action = "walk",  key = 'advisor', from = 181, to = 180 },
     { duration = 0, action = "walk",  key = 'chara',   from = -200, to = 40, movetime = 2000 },
     { duration = 2000, action = "wait" },
-    
-    -- style: 'Quote' (오른쪽 배치/말풍선), 'QuoteL' (왼쪽 배치/말풍선)
     { action = "say",   key = 'advisor', style = 'Quote',  text = "오셨군요." },
     { action = "say",   key = 'chara',   style = 'QuoteL', text = "네." },
     { action = "say",   key = 'advisor', style = 'Quote',  text = "여기 이 마차가\n'그' 마차입니다." },
-    { duration = 300, action = "walk",  key = 'chara',   from = 40, to = 80, movetime = 300 },
-    { duration = 300, action = "walk",  key = 'chara',   from = 80, to = 40, movetime = 300 },
+    { duration = 600, action = "walk",  key = 'chara',   from = 40, to = 80, movetime = 600 },
+    { duration = 600, action = "walk",  key = 'chara',   from = 80, to = 40, movetime = 600 },
     { duration = 300, action = "walk",  key = 'chara',   from = 40, to = 42, movetime = 20 },
     { action = "say",   key = 'chara',   style = 'QuoteL', text = "반짝반짝하네요." },
     { action = "say",   key = 'advisor', style = 'Quote',  text = "일반적인 마차는\n이렇게 반짝반짝하지 않죠." },
@@ -32,12 +29,12 @@ local TutorialScript = {
     { action = "say",   key = 'chara',   style = 'QuoteL', text = "사람만 나르는 멋진 마차가\n있으면 좋겠다 싶어서요." },
     { action = "say",   key = 'advisor', style = 'Quote',  text = "그건 알겠습니다만\n아가씨," },
     { action = "say",   key = 'advisor', style = 'Quote',  text = "그걸 왜 본인이 직접\n하신다는 거죠?" },
-    { duration = 1200, action = "emote", key = 'chara',   style = 'QuoteL', emotion = 1 },
+    { duration = 1200, action = "emote", key = 'chara', emotion = 1 },
     { action = "say",   key = 'advisor', style = 'Quote',  text = "...아닙니다." },
     { action = "say",   key = 'advisor', style = 'Quote',  text = "그냥 마차를\n몰고 싶으신 거군요." },
     { action = "say",   key = 'advisor', style = 'Quote',  text = "마차 타실 때마다..." },
     { action = "say",   key = 'advisor', style = 'Quote',  text = "마부들만 보고 있던 게\n눈에 선합니다." },
-    { duration = 1200, action = "emote", key = 'chara',   style = 'QuoteL', emotion = 2 },
+    { duration = 1200, action = "emote", key = 'chara', emotion = 2 },
     { action = "say",   key = 'advisor', style = 'Quote',  text = "그럼 어디\n아가씨 솜씨 좀 볼까요." },
     { action = "say",   key = 'advisor', style = 'Quote',  text = "어차피 마차를 등록하려면\n수도로 가야 하는 김에" },
     { action = "say",   key = 'advisor', style = 'Quote',  text = " 한 번 태워주시지요." },
@@ -49,16 +46,9 @@ function Tutorial:Init(wagonX, wagonY)
     self.current_index = 1
     self.elapsed_time = 0
 
-    -- 1. 객체 등록 (ObjectManager)
-    -- 아가씨 (말풍선 위치 조정: sayOY = -60)
-    ObjectManager:Add(Anims.chara(), 'chara', -32, 32, {
-        layer = 2, sayOX = 32, sayOY = 20, defaultAnim = 'idle' 
-    })
-    -- 조언자
     ObjectManager:Add(Anims.Advisor(), 'advisor', -32, 32, {
-        layer = 2, sayOX = 12, sayOY = 20, defaultAnim = 'idle' 
+        layer = 2, sayOX = 32, sayOY = 20, defaultAnim = 'idle'
     })
-    
     -- 초기 위치 설정 (조언자는 마차 근처 대기)
     ObjectManager:Move('advisor', wagonX + 160, wagonY)
 
@@ -149,13 +139,44 @@ function Tutorial:OnClick(x, y)
     self:Next()
 end
 
+local AdvisorPattern = {
+    { action = "walk", to = 250, speed = 0.04 },
+    { action = "say", text = "아가씨가 이런 걸\n하게 되는 날이 오다니..", duration = 4000 },
+    { action = "walk", to = 180, speed = 0.04 },
+    { action = "wait", duration = 3000 },
+    { action = "say", text = "마차를 '클릭' 하면\n운행을 준비할 수 있답니다...", duration = 4000 },
+    { action = "listen", text = "아저씨가 마차를\n다 가리고 있는데요.", duration = 4000 },
+    { action = "say", text = "예? 저는\n말 옆에 서 있는데요?", duration = 4000 },
+    { action = "listen", text = "...아무튼\n그런 게 있어요.", duration = 4000 },
+}
 function Tutorial:Finish()
     self.is_active = false
     self.timer = nil
-    self.current_index = 0 -- 다음에 다시 시작할 경우를 대비해 인덱스 초기화
+    self.current_index = 0
     
-    -- 화면에 남은 말풍선 싹 지우기
     ObjectManager:ClearAllSay()
-    Datastore.get('fsm'):transition('idle')
+
+    -- 1. ObjectManager에 있는 실제 '객체'를 가져옵니다.
+    -- (.anim이 아니라 객체 자체에 데이터를 넣는 것이 나중에 관리하기 편합니다)
+    local advisor = ObjectManager.objects['advisor']
+    
+    if advisor then
+        -- 2. 객체에 직접 손님 데이터 주입
+        advisor.name = "박덕배"
+        advisor.dest = "한양"
+        advisor.fee = 150
+        advisor.trait1 = { name = "애주가", type = "Positive" }
+        advisor.trait2 = { name = "쾌활함", type = "Positive" }
+        advisor.isBoarding = false
+        
+        -- 3. 이 객체가 '손님'임을 나타내는 플래그 (ObjectManager:GetCustomers에서 필터링용)
+        advisor.is_npc = true
+    end
+
+    -- 4. 이제 인자 없이 transition (UI는 열릴 때 ObjectManager에서 직접 긁어감)
+    Datastore.get('fsm'):transition('idle', { advisor })
+    
+    ObjectManager:InjectPattern('advisor', AdvisorPattern, true)
 end
+
 return Tutorial

@@ -65,11 +65,31 @@ function Anim:draw(x, y, w, h)
     local drawW = w or self.fw
     local drawH = h or self.fh
 
-        for _, imgId in ipairs(self.layers) do
-            if imgId then
-                g.image(imgId, x, y, drawW, drawH, sx, sy, self.fw, self.fh, self.flipX)
-            end
+    for _, imgId in ipairs(self.layers) do
+        if imgId then
+            g.image(imgId, x, y, drawW, drawH, sx, sy, self.fw, self.fh, self.flipX)
         end
     end
+end
+function Anim:drawFrame(animName, frameIdx, x, y, w, h)
+    local anim = self.animations[animName]
+    if not anim then return end
+    
+    -- 1. 전달받은 인덱스가 안전한지 확인 (기본값 1)
+    local idx = frameIdx or 1
+    local frameNum = anim.frames[idx] or anim.frames[1]
+    
+    -- 2. 시트에서의 좌표 계산 (기존 draw 로직과 동일)
+    local sx = (frameNum % self.cols) * self.fw
+    local sy = math.floor(frameNum / self.cols) * self.fh
+    local drawW = w or self.fw
+    local drawH = h or self.fh
 
+    -- 3. 레이어 한땀 한땀 그리기
+    for _, imgId in ipairs(self.layers) do
+        if imgId then
+            g.image(imgId, x, y, drawW, drawH, sx, sy, self.fw, self.fh)
+        end
+    end
+end
 return Anim

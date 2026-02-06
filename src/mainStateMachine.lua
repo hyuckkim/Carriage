@@ -12,27 +12,15 @@ local fsm
 local workthrough = 0
 
 function mainStateMachine.init(self, wagonX, wagonY)
-    local newCustomers = {}
-    for i = 1, 8 do
-        table.insert(newCustomers, createRandomCustomer())
-    end
-
-    -- 참조 끊김 없이 Datastore.customers의 내용만 바뀜!
-    DataStore.update("customers", newCustomers)
     fsm = StateMachine.new()
     fsm:addState("prologue", {
         onEnter = function()
             ObjectManager:Add(Anims.wagon(), 'wagon', 1, 0, {
                 layer = 0,
-                anim = 'idle',
+                anim = 'idle'
             })
             ObjectManager:Add(Anims.chara(), 'chara', -32, 32, {
-                layer = 1,
-                anim = 'idle'
-            })
-            ObjectManager:Add(Anims.Advisor(), 'advisor', -32, 32, {
-                layer = 1,
-                anim = 'idle'
+                layer = 2, sayOX = 32, sayOY = 20, defaultAnim = 'idle'
             })
             ObjectManager:Move('wagon', wagonX, wagonY)
 
@@ -48,14 +36,19 @@ function mainStateMachine.init(self, wagonX, wagonY)
             Tutorial:OnClick(x, y)
         end
     })
-    fsm:addState("tutorial", {
-
-    })
     fsm:addState("idle", {
-        onEnter = function() 
+        onEnter = function(customers)
             -- 개별 anim:play가 아니라 ObjectManager에게 명령
             ObjectManager:Play('wagon', 'idle')
             ObjectManager:Play('chara', 'idle')
+
+            if not customers then
+                local newCustomers = {}
+                for i = 1, 8 do
+                    createRandomCustomer()
+                end
+                DataStore.update("customers", newCustomers)
+            end
         end,
         onDraw = function()
             -- 여기선 더이상 wagonAnim:draw()를 부르지 않음 (main에서 그리니까)

@@ -10,7 +10,7 @@ local ObjectManager = {
     height = 0
 }
 ObjectManager.bubbleOffsets = {
-    Quote = { x = -100, y = -50 },
+    Quote = { x = -120, y = -50 },
     QuoteL = { x = -5, y = -50 }
 }
 function ObjectManager:Init(width, height)
@@ -51,6 +51,7 @@ function ObjectManager:Add(anim, key, ox, oy, opts)
     if opts.anim then
         anim:play(opts.anim)
     end
+    return obj
 end
 
 -- 레이어 순서대로 정렬 (Z-Index 정렬)
@@ -122,7 +123,71 @@ function ObjectManager:Update(dt)
             end
         end
     end
+    UpdateNPCs(dt)
 end
+function UpdateNPCs(dt)
+    local player = ObjectManager.objects['chara']
+    local wagon = ObjectManager.objects['wagon']
+    
+    local refX = 400
+    if player then
+        refX = player.x
+    elseif wagon then
+        refX = wagon.x
+    end
+    for _, obj in pairs(ObjectManager.objects) do
+        if not obj.is_npc then goto continue end
+
+        if obj.behavior_type == 'pattern' then
+            -- 1. 타이머 진행
+            if obj.timer and obj.timer > 0 then
+                obj.timer = obj.timer - dt
+            end
+
+            -- 2. 타이머가 끝났고, 이동 중도 아닐 때 다음 패턴 실행
+            local is_moving = (obj.moveTime and obj.moveTime > 0)
+            if (not obj.timer or obj.timer <= 0) and not is_moving then
+                
+                -- 다음 단계로
+                obj.pattern_index = (obj.pattern_index % #obj.pattern_script) + 1
+                local step = obj.pattern_script[obj.pattern_index]
+
+                -- 패턴 실행
+                if step.action == "say" then
+                    ObjectManager:StopSay('chara')
+                    
+                    -- [추정] obj.x 좌표에 따른 말풍선 스타일 분기
+                    local style = (obj.x < 150) and 'QuoteL' or 'Quote'
+                    ObjectManager:Say(obj.key, step.text, style)
+
+                elseif step.action == "emote" then
+                    ObjectManager:StopSay('chara')
+                    ObjectManager:StopSay(obj.key)
+                    ObjectManager:Emote(obj.key, step.emotion)
+
+                elseif step.action == "walk" then
+                    ObjectManager:StopSay('chara')
+                    ObjectManager:StopSay(obj.key)
+                    ObjectManager:Play(obj.key, 'walk')
+                    ObjectManager:MoveBySpeed(obj.key, step.to, obj.y, step.speed or 40, 'idle')
+
+                elseif step.action == "listen" then
+                    ObjectManager:StopSay(obj.key)
+                    local style = (player.x < 150) and 'QuoteL' or 'Quote'
+                    local speaker = player and 'chara' or 'wagon'
+                    ObjectManager:Say(speaker, step.text, style)
+                end
+
+
+                -- 타이머 설정 (duration이 없으면 즉시 다음 프레임에 다음 패턴)
+                obj.timer = step.duration or 0
+            end
+        end
+
+        ::continue::
+    end
+end
+
 function ObjectManager:Draw()
     -- 이제 objects 대신 정렬된 renderQueue를 순회합니다.
     for _, obj in ipairs(self.renderQueue) do
@@ -153,7 +218,19 @@ function ObjectManager:Draw()
         end
     end
 end
+function ObjectManager:InjectPattern(key, pattern, startImmediate)
+    local obj = self.objects[key]
+    if not obj then return end
 
+    -- 패턴 관련 속성 주입
+    obj.is_npc = true
+    obj.behavior_type = 'pattern'
+    obj.pattern_script = pattern
+    obj.pattern_index = 0 -- 첫 실행 시 1로 시작하도록 0 설정
+    
+    -- startImmediate가 true면 즉시 첫 패턴 실행, 아니면 랜덤 대기 후 시작
+    obj.timer = startImmediate and 0 or math.random(1, 3)
+end
 -- (나중에 레이어를 실시간으로 바꾸고 싶을 때를 대비)
 function ObjectManager:SetLayer(key, newLayer)
     if self.objects[key] then
@@ -247,4 +324,18 @@ function ObjectManager:Scroll(deltaX, deltaY)
     self.scrollY = self.scrollY + deltaY
 end
 
+function ObjectManager:GetCustomers()
+    local list = {}
+    -- 등록된 모든 객체 중 NPC(손님)인 것만 골라내기
+    for _, obj in pairs(self.objects) do
+        if obj.is_npc then 
+            table.insert(list, obj)
+        end
+    end
+    
+    -- (선택 사항) 리스트 순서가 바뀌지 않게 특정 기준으로 정렬
+    table.sort(list, function(a, b) return a.name < b.name end)
+    
+    return list
+end
 return ObjectManager
