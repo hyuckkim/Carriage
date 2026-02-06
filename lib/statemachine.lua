@@ -7,6 +7,7 @@ StateMachine.__index = StateMachine
 ---@field onUpdate? fun(dt)
 ---@field onDraw? fun()
 ---@field onExit? fun()
+---@field onClick? fun(x, y)
 ---@
 function StateMachine.new()
     ---@class StateMachine
@@ -64,4 +65,9 @@ function StateMachine:draw()
     end
 end
 
+function StateMachine:click(x, y)
+    if self.current and self.current.onClick then
+        self.current.onClick(x, y)
+    end
+end
 return StateMachine

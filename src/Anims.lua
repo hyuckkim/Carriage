@@ -26,6 +26,10 @@ function Anims.chara()
 
     return anim
 end
+function Anims.Advisor()
+    local anim = Anim.new(res.image("assets/males.png"), 64, 64, 11)
+    anim:add("idle", {12, 23, 34}, 220, true)
 
-
+    return anim
+end
 return Anims

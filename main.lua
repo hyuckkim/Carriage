@@ -1,6 +1,7 @@
 require('src.globals')
 
 WindowTitle = "wagon"
+local ObjectManager = require("lib.ObjectManager")
 local UIManager = require("lib.UIManager")
 local Datastore = require("src.Datastore")
 local mainStateMachine = require("src.mainStateMachine")
@@ -26,10 +27,14 @@ function Init()
     UIManager:add("settingPanel", require("src.UI.settingPanel")())
     UIManager:add("customerPanel", require("src.UI.customerPanel")())
 
-    Datastore.get('fsm'):transition("idle")
+    ObjectManager:Init(sw, sh)
+
+    Datastore.get('fsm'):transition("prologue")
+    Datastore.registerTask('map', res.jsonAsync('map.json'))
 end
 
 function Update(dt)
+    ObjectManager:Update(dt)
     Datastore.get('fsm'):update(dt)
     UIManager:update(dt)
 end
@@ -38,6 +43,7 @@ function Draw()
     g.push()
         local size = Datastore.get('settings').mainSize
         g.scale(size, size, 0, sh)
+        ObjectManager:Draw()
         Datastore.get('fsm'):draw()
     g.pop()
     UIManager:draw()
@@ -57,7 +63,7 @@ end
 function OnMouseUp(x, y)
     local clicked = UIManager:dispatchClick(x, y, "left")
     if not clicked then
-        UIManager:open('mainPanel')
+        Datastore.get('fsm'):click(x, y)
     end
 end
 function OnRightMouseDown(x, y)

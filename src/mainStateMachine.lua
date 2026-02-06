@@ -2,6 +2,9 @@ local StateMachine = require("lib.statemachine")
 local Anims = require("src.Anims")
 local createRandomCustomer = require("src.CharacterFactory").create
 local DataStore = require("src.Datastore")
+local UIManager = require("lib.UIManager")
+local ObjectManager = require("lib.ObjectManager")
+local Tutorial = require("src.Sequence.Tutorial")
 
 local mainStateMachine = {}
 local fsm
@@ -25,6 +28,37 @@ function mainStateMachine.init(self, wagonX, wagonY)
     -- 참조 끊김 없이 Datastore.customers의 내용만 바뀜!
     DataStore.update("customers", newCustomers)
     fsm = StateMachine.new()
+    fsm:addState("prologue", {
+        onEnter = function()
+            ObjectManager:Add(Anims.wagon(), 'wagon', 1, 0, {
+                layer = 0,
+                anim = 'idle',
+            })
+            ObjectManager:Add(Anims.chara(), 'chara', -32, 32, {
+                layer = 1,
+                anim = 'idle'
+            })
+            ObjectManager:Add(Anims.Advisor(), 'advisor', -32, 32, {
+                layer = 1,
+                anim = 'idle'
+            })
+            ObjectManager:Move('wagon', wagonX, wagonY)
+
+            Tutorial:Init(wagonX, wagonY)
+        end,
+        onDraw = function()
+            Tutorial:Draw()
+        end,
+        onUpdate = function(dt)
+            Tutorial:Update(dt)
+        end,
+        onClick = function(x, y)
+            Tutorial:OnClick(x, y)
+        end
+    })
+    fsm:addState("tutorial", {
+
+    })
     fsm:addState("idle", {
         onEnter = function() 
             wagonAnim:play("idle")
@@ -40,9 +74,6 @@ function mainStateMachine.init(self, wagonX, wagonY)
             -- characters[4]:update(dt)
             topAnim:update(dt)
         end,
-        onExit = function()
-
-        end,
         onDraw = function()
             wagonAnim:draw(wagonX, wagonY)
             character:draw(wagonX + 120, wagonY + 32, 64, 64)
@@ -51,6 +82,9 @@ function mainStateMachine.init(self, wagonX, wagonY)
             -- characters[3]:draw(65, wagonY + 8, 80, 64)
             -- characters[4]:draw(80, wagonY + 6, 80, 64)
             topAnim:draw(wagonX, wagonY)
+        end,
+        onClick = function()
+            UIManager:open('main')
         end
     })
     fsm:addState("walk", {

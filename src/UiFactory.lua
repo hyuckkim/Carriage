@@ -19,6 +19,14 @@ UIFactory.Skins = {
     House = {
         imagePath = "assets/house.png",
         normal = { 32, 154, 32, 32, 0, 0, 0, 0}
+    },
+    Quote = {
+        imagePath = "assets/Emoji.png",
+        normal = { 161, 227, 15, 12, 2, 10, 2, 5}
+    },
+    QuoteL = {
+        imagePath = "assets/Emoji.png",
+        normal = { 161, 227, 15, 12, 11, 2, 2, 5}
     }
 }
 
@@ -136,6 +144,11 @@ UIFactory.Fonts = {
     Trait_negative = {
         fontId = res.fontFile("assets/NanumSquareRoundR.ttf", "나눔스퀘어라운드 Regular", 12),
         color = {255, 200, 200},
+        align = "left"
+    },
+    Quote = {
+        fontId = res.fontFile("assets/NanumSquareRoundR.ttf", "나눔스퀘어라운드 Regular", 10),
+        color = {0, 0, 0},
         align = "left"
     }
 }
