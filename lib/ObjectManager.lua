@@ -93,9 +93,23 @@ function ObjectManager:Update(dt)
                 obj.moveTime = obj.moveTime - dt
             end
         end
-        if obj.say and obj.say.timer then
-            obj.say.timer = obj.say.timer - dt
-            if obj.say.timer <= 0 then obj.say = nil end
+        if obj.say then
+            local len = utf8.len(obj.say.fullText)
+            if obj.say.charIndex < len then
+                obj.say.typeTimer = obj.say.typeTimer + dt
+                if obj.say.typeTimer >= obj.say.typeSpeed then
+                    obj.say.typeTimer = 0
+                    obj.say.charIndex = obj.say.charIndex + 1
+                    
+                    -- utf8.offset을 사용해 정확한 바이트 위치 계산
+                    local byteOffset = utf8.offset(obj.say.fullText, obj.say.charIndex + 1) - 1
+                    obj.say.text = string.sub(obj.say.fullText, 1, byteOffset)
+                    
+                elseif obj.say.timer then
+                    obj.say.timer = obj.say.timer - dt
+                    if obj.say.timer <= 0 then obj.say = nil end
+                end
+            end
         end
         if obj.emote then
             obj.emote.anim:update(dt)
@@ -172,9 +186,15 @@ function ObjectManager:Say(key, text, style, duration)
     if not obj then return end
 
     obj.say = {
-        text = text,
-        style = style or 'Quote', -- 기본값 설정
-        timer = duration
+        fullText = text,       -- 전체 문장
+        text = "",             -- 현재 보여줄 문장 (빈 값으로 시작)
+        style = style or 'Quote',
+        timer = duration,      -- 대사 유지 시간
+        
+        -- 타이핑 관련
+        charIndex = 0,         -- 현재 몇 번째 글자인지
+        typeTimer = 0,         -- 다음 글자가 나올 때까지의 시간
+        typeSpeed = 0.05       -- 글자당 속도 (낮을수록 빠름)
     }
 end
 function ObjectManager:StopSay(key)
