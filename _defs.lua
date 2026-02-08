@@ -3,8 +3,13 @@
 g = {}
 
 function g.rect(x, y, w, h) end
-function g.color(r, g, b, a) end
+function g.circle(x, y, radius) end
 function g.text(font, text, x, y) end
+function g.polygon(polygonXYXY) end
+function g.polyline(polygonXYXY) end
+
+function g.color(r, g, b, a) end
+function g.lineWidth(s) end
 
 ---@reutrn number w
 ---@return number h
