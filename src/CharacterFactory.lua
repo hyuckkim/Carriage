@@ -177,7 +177,7 @@ local function pickSkinInfo(gender, categoryName)
     return nil
 end
 
-function CharacterFactory.createCustomer(gender, key)
+function CharacterFactory.createCustomer(pos, gender, key)
     gender = gender or (math.random() > 0.5 and "male" or "female")
     local categories = {"skin", "top", "bottom", "hair", "footage", "hat"}
     local layerIds = {}
@@ -225,11 +225,11 @@ function CharacterFactory.createCustomer(gender, key)
         recipe = visualRecipe,
     }
 
-    local objKey = key or ("cust_" .. math.random(1000, 9999))
+    local objKey = key or ("cust_" .. math.random(1000, 9999) .. "_" .. customerData.name)
     local customer = Customer.new(objKey, anim, customerData)
 
-    customer.x = 400
-    customer.y = 300
+    customer.x = pos.x
+    customer.y = pos.y
     
     ObjectManager:Register(customer)
 

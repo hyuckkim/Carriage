@@ -165,12 +165,12 @@ function Tutorial:Finish()
         -- 손님 데이터 준비
         local customerData = {
             name = "박덕배",
-            destination = "한양",
+            destination = "Oksun",
             budget = 150,
             traits = { "애주가", "쾌활함" }
         }
         
-        local advisor = Customer.new('advisor', oldAdvisor.anim, customerData)
+        local advisor = Customer.new('cust_0000_박덕배', oldAdvisor.anim, customerData)
         advisor.x, advisor.y = oldAdvisor.x, oldAdvisor.y
         advisor.ox, advisor.oy = oldAdvisor.ox, oldAdvisor.oy
         advisor.sayOX, advisor.sayOY = oldAdvisor.sayOX, oldAdvisor.sayOY
@@ -178,7 +178,7 @@ function Tutorial:Finish()
         ObjectManager:Remove('advisor')
         ObjectManager:Register(advisor)
         
-        advisor:setPattern(AdvisorPattern, true)
+        advisor:setPattern(AdvisorPattern)
 
         -- FSM 전환
         Datastore.get('fsm'):transition('idle', { advisor })

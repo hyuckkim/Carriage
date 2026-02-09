@@ -268,4 +268,179 @@ function CanvasMap:getClickTown(mx, my, drawW, drawH, srcX, srcY, srcW, srcH)
     return closestBurg
 end
 
+-- 마을 이름을 입력받아 burg 객체를 반환합니다.
+function CanvasMap:getNameTown(name)
+    if not self.data or not self.data.pack then return nil end
+    local pack = self.data.pack
+
+    local i = 2 -- Azgaar 데이터 특성상 2번부터 실제 데이터
+    while true do
+        local b = pack.burgs[i]
+        
+        -- 데이터가 없거나 끝에 도달하면 종료
+        if not b or type(b) ~= "userdata" then break end
+        
+        -- 이름을 비교 (대소문자 구분 없이 하고 싶다면 string.lower 사용)
+        if b.name == name then
+            return b
+        end
+        
+        i = i + 1
+    end
+    
+    return nil -- 찾지 못한 경우
+end
+
+function CanvasMap:getBurgCell(burg)
+    -- burg.cell이 직접 저장되어 있다면 그것을 사용하고, 
+    -- 없다면 좌표와 가장 가까운 cell을 찾습니다.
+    if burg.cell then return burg.cell end
+    
+    local minState = 1000000
+    local targetIdx = -1
+    for i, cell in ipairs(self.data.pack.cells) do
+        local dx, dy = cell.p[1] - burg.x, cell.p[2] - burg.y
+        local dist = dx*dx + dy*dy
+        if dist < minState then
+            minState = dist
+            targetIdx = cell.i
+        end
+    end
+    return targetIdx
+end
+function CanvasMap:findRoadPath(startTownName, endTownName)
+    local pack = self.data.pack
+    local startBurg = getCenterBurg(pack.burgs, startTownName)
+    local endBurg = getCenterBurg(pack.burgs, endTownName)
+    
+    if not startBurg or not endBurg then return nil end
+
+    local startNode = self:getBurgCell(startBurg)
+    local endNode = self:getBurgCell(endBurg)
+
+    -- A* 알고리즘용 테이블
+    local openSet = {startNode}
+    local cameFrom = {}
+    local gScore = { [startNode] = 0 }
+
+    while #openSet > 0 do
+        -- 1. 가장 점수가 낮은 노드 선택 (실제 구현시 우선순위 큐 권장)
+        table.sort(openSet, function(a, b) return (gScore[a] or 1e9) < (gScore[b] or 1e9) end)
+        local current = table.remove(openSet, 1)
+
+        if current == endNode then
+            -- 경로 복원 및 경유지 추출
+            return self:reconstructPath(cameFrom, current)
+        end
+
+        local cell = pack.cells[current+1]
+        if cell.routes then
+            for neighborIdx, routeId in pairs(cell.routes) do
+                local neighbor = tonumber(neighborIdx)
+                -- 도로가 있으므로 가중치를 1(매우 낮음)로 설정
+                local tentative_gScore = gScore[current] + 1 
+
+                if neighbor and (not gScore[neighbor] or tentative_gScore < gScore[neighbor]) then
+                    cameFrom[neighbor] = current
+                    gScore[neighbor] = tentative_gScore
+                    table.insert(openSet, neighbor)
+                end
+            end
+        end
+    end
+end
+
+function CanvasMap:findRoadPathWithLimit(startTownName, endTownName, limit)
+    local limit = limit or 5 -- 최대 탐색 비용 (거리 혹은 셀 개수)
+    local pack = self.data.pack
+    
+    -- 1. 시작/목표 마을 찾기
+    local startBurg = getCenterBurg(pack.burgs, startTownName)
+    local endBurg = getCenterBurg(pack.burgs, endTownName)
+    if not startBurg or not endBurg then return nil, "TOWN_NOT_FOUND" end
+
+    -- 2. 마을이 속한 셀 찾기
+    local startNode = self:getBurgCell(startBurg)
+    local endNode = self:getBurgCell(endBurg)
+
+    -- 3. A* 탐색 준비
+    local openSet = {startNode}
+    local cameFrom = {}
+    local gScore = { [startNode] = 0 }
+    
+    -- 간단한 거리 계산용 로컬 함수
+    local function getDist(aIdx, bIdx)
+        local c1, c2 = pack.cells[aIdx+1], pack.cells[bIdx+1]
+        return math.sqrt((c1.p[1]-c2.p[1])^2 + (c1.p[2]-c2.p[2])^2)
+    end
+
+    -- 4. 탐색 루프
+    local found = false
+    while #openSet > 0 do
+        -- 가장 점수가 낮은 노드 추출 (Priority Queue 대용)
+        table.sort(openSet, function(a, b) return (gScore[a] or 1e9) < (gScore[b] or 1e9) end)
+        local current = table.remove(openSet, 1)
+
+        -- 목적지 도착 성공!
+        if current == endNode then
+            found = true
+            break
+        end
+
+        -- [거리 제한] 현재까지의 거리가 리미트를 넘었다면 더 이상 확장 안 함
+        if gScore[current] >= limit then
+            -- 이 노드는 건너뛰고 openSet의 다른 후보를 확인
+        else
+            local cell = pack.cells[current+1]
+            if cell.routes then
+                for neighborIdx, _ in pairs(cell.routes) do
+                    local neighbor = tonumber(neighborIdx)
+                    -- 도로가 있으면 가중치를 1로 둠 (단순 셀 개수 기준 리미트인 경우)
+                    local tentative_gScore = gScore[current] + 1 
+
+                    if neighbor and (not gScore[neighbor] or tentative_gScore < gScore[neighbor]) then
+                        cameFrom[neighbor] = current
+                        gScore[neighbor] = tentative_gScore
+                        table.insert(openSet, neighbor)
+                    end
+                end
+            end
+        end
+    end
+
+    -- 5. 경로 복원 (성공했을 때만 실행)
+    if found then
+        local pathCells = {}
+        local waypoints = {}
+        local totalDist = 0
+        local curr = endNode
+
+        while curr do
+            table.insert(pathCells, 1, curr)
+            local cell = pack.cells[curr+1]
+            
+            -- 마을 이름 추출 (시작/끝 마을 포함)
+            if cell.burg and cell.burg > 0 then
+                local b = pack.burgs[cell.burg]
+                table.insert(waypoints, 1, b.name)
+            end
+            
+            local prev = cameFrom[curr]
+            if prev then
+                totalDist = totalDist + getDist(curr, prev)
+            end
+            curr = prev
+        end
+
+        return {
+            distance = totalDist,
+            towns = waypoints,
+            cells = pathCells
+        }
+    end
+
+    -- 6. 실패 시 반환
+    return nil, "PATH_NOT_FOUND_OR_TOO_FAR"
+end
+
 return CanvasMap

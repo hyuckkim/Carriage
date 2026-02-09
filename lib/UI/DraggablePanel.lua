@@ -1,4 +1,3 @@
--- lib/DraggablePanel.lua
 local UIPanel = require("lib.UI.UIPanel")
 ---@class DraggablePanel : UIPanel
 local DraggablePanel = setmetatable({}, { __index = UIPanel })

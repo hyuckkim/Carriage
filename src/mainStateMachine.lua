@@ -6,16 +6,16 @@ local Character = require("src.Object.character")
 
 local mainStateMachine = {}
 local fsm
-local workthrough = 0
 
-function mainStateMachine.init(self, wagonX, wagonY)
+function mainStateMachine:init(wagonX, wagonY)
     fsm = StateMachine.new()
     fsm:addState("prologue", {
         onEnter = function()
-            -- 마차 생성 (일반 Object로 생성하거나 Character로 생성 가능)
             local wagon = Character.new('wagon', Anims.wagon())
             wagon:Move(wagonX, wagonY)
             wagon:act('idle')
+            wagon.isAbsolute = true
+            wagon.layer = -20
             ObjectManager:Register(wagon)
 
             -- 주인공 생성 (Character 클래스 활용)
@@ -23,6 +23,13 @@ function mainStateMachine.init(self, wagonX, wagonY)
             chara.ox, chara.oy = -32, 32
             chara.sayOX, chara.sayOY = 32, 20
             ObjectManager:Register(chara)
+
+            local wagonTop = Character.new('wagonTop', Anims.wagonTop())
+            wagonTop:Move(wagonX, wagonY)
+            wagonTop:act('idle')
+            wagonTop.isAbsolute = true
+            wagonTop.layer = -10
+            ObjectManager:Register(wagonTop)
 
             -- 튜토리얼 시작
             Tutorial:Init(wagonX, wagonY)
@@ -32,33 +39,7 @@ function mainStateMachine.init(self, wagonX, wagonY)
         onClick  = function(x, y) Tutorial:OnClick(x, y) end
     })
     fsm:addState("idle", require("src.State.IdleState"))
-
-    fsm:addState("walk", {
-        onEnter = function() 
-            ObjectManager:Play('wagon', 'walk')
-            workthrough = 0
-            
-            local passengers = ObjectManager:GetAll(function(obj) 
-                return obj.is_customer and obj.isBoarding 
-            end)
-            for _, p in ipairs(passengers) do
-                p.visible = false
-            end
-        end,
-        onUpdate = function(dt)
-            workthrough = workthrough + dt
-            if workthrough >= 5000 then
-                fsm:transition('idle')
-            end
-        end,
-        onDraw = function()
-            -- 진행바 UI
-            g.color(0, 0, 0)
-            g.rect(wagonX + 10, wagonY - 50, 200, 5)
-            g.color(255, 255, 255)
-            g.rect(wagonX + 10, wagonY - 50, (200 / 5000) * workthrough, 5)
-        end
-    })
+    fsm:addState("walk", require("src.State.WalkState"))
 
     return fsm
 end

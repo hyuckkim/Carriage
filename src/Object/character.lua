@@ -9,12 +9,13 @@ Character.__index = Character
 
 ---@return Character
 function Character.new(key, anim)
-    ---@class Character
+    ---@class Character: Object
     local self = Object.new(key, anim)
     setmetatable(self, Character)
     
     self.say = nil
     self.is_npc = true
+    self.is_destroyed = false
 
     self.sayOX = 0
     self.sayOY = 0
@@ -32,6 +33,7 @@ Character.bubbleOffsets = {
 
 -- 조상의 update를 확장(Override)
 function Character:update(dt)
+    if self.is_destroyed then return end
     local base = getmetatable(Character).__index
     base.update(self, dt)
 
@@ -98,11 +100,20 @@ function Character:_updateMovement(dt)
 end
 
 function Character:draw(scrollX, scrollY)
+    if self.is_destroyed then return end
     local base = getmetatable(Character).__index
     base.draw(self, scrollX, scrollY)
 
     local drawX = self.x - scrollX + self.ox
     local drawY = self.y - scrollY + self.oy
+end
+
+function Character:drawUI(scrollX, scrollY)
+    if self.is_destroyed then return end
+    
+    local drawX = self.x - scrollX + self.ox
+    local drawY = self.y - scrollY + self.oy
+    
     self:_drawDialogue(drawX, drawY)
     self:_drawEmote(drawX, drawY)
 end
@@ -195,13 +206,13 @@ function Character:Emote(emotionIndex, duration)
     self.emote.anim:play(name)
 end
 
-function Character:setPattern(pattern, startImmediate)
+function Character:setPattern(pattern)
     self.behavior_type = 'pattern'
     self.pattern_script = pattern
     self.pattern_index = 0
     
     -- 즉시 시작할지, 약간의 랜덤 대기를 가질지 결정
-    self.timer = startImmediate and 0 or math.random(1, 3)
+    self.timer = 0
 end
 
 function Character:updatePattern(dt)
