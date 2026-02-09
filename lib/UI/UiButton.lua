@@ -57,16 +57,15 @@ end
 function UIButton:dispatchClick(x, y, button)
     if not self.visible or not self:isHit(x, y) then return false end
 
-    -- 1. 자식에게 먼저 기회를 줌
     for i = #self.children, 1, -1 do
         if self.children[i].dispatchClick and self.children[i]:dispatchClick(x, y, button) then
             return true
         end
     end
 
-    -- 2. 자식이 처리 안 했으면 내가 처리
     if button == "left" and self.callback then
-        self.callback()
+        local lx, ly = self:getAbsolutePos()
+        self.callback(x - lx, y - ly, button)
         return true
     end
     return true

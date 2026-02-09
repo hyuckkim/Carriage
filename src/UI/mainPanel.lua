@@ -1,6 +1,7 @@
 local UIManager = require("lib.UIManager")
 local UIFactory = require("src.UiFactory")
 local Datastore = require("src.Datastore")
+local UIViewport = require("lib.UI.UIViewport")
 
 return function ()
     local panel = UIFactory.createDraggablePanel("Default", 300, 700, 400, 300)
@@ -19,6 +20,18 @@ return function ()
     end))
     panel:addChild(UIFactory.createButton("Default", 210, 240, 180, 50, "게임 종료", function()
         sys.quit()
+    end))
+    panel:addChild(UIViewport.new(10, 10, 200, 150, function (x, y, w, h)
+    local map = Datastore.get('canvasMap')
+    if map then
+        map:Draw(x, y, w, h, 200, 150, 400, 300)
+    end
+end, function (x, y, button)
+        local map = Datastore.get('canvasMap')
+        if map then
+            local town = map:getClickTown(x, y, 200, 150, 200, 150, 400, 300)
+            Datastore.update('selectedBurg', town)
+        end
     end))
     
     panel.visible = false

@@ -1,8 +1,5 @@
 local StateMachine = require("lib.statemachine")
 local Anims = require("src.Anims")
-local CharacterFactory = require("src.CharacterFactory")
-local DataStore = require("src.Datastore")
-local UIManager = require("lib.UIManager")
 local ObjectManager = require("lib.ObjectManager")
 local Tutorial = require("src.Sequence.Tutorial")
 local Character = require("src.Object.character")
@@ -34,18 +31,7 @@ function mainStateMachine.init(self, wagonX, wagonY)
         onDraw   = function()   Tutorial:Draw()   end,
         onClick  = function(x, y) Tutorial:OnClick(x, y) end
     })
-    fsm:addState("idle", {
-        onEnter = function(initialCustomers)
-            if not initialCustomers then
-                for i = 1, 8 do
-                    CharacterFactory.createCustomer()
-                end
-            end
-        end,
-        onClick = function() 
-            UIManager:open('mainPanel')
-        end
-    })
+    fsm:addState("idle", require("src.State.IdleState"))
 
     fsm:addState("walk", {
         onEnter = function() 
