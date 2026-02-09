@@ -23,9 +23,9 @@ return function ()
 
     panel.onSetScroll = function (self, idx)
         self.currentIdx = idx
-        -- 범용 필터링 함수 사용
         local customers = ObjectManager:GetAll('is_customer')
-        
+        local boardingCount = #ObjectManager:GetAll('isBoarding')
+
         for i = 1, 4 do
             local customer = customers[idx + i - 1]
             local ctx = self:at(i)
@@ -54,12 +54,31 @@ return function ()
                 end
 
                 -- 승차/환불 버튼
-                ctx:addChild(UIFactory.createButton("Default", 210, 20, 80, 40,
-                customer.isBoarding and "환불" or "승차", function()
-                    customer.isBoarding = not customer.isBoarding
-                    self:onSetScroll(idx)
-                end))
-                
+                local isFull = boardingCount >= 4 -- 4명 이상인지 체크
+                local btnText = ""
+                local btnAction = nil
+
+                if customer.isBoarding then
+                    btnText = "환불"
+                    btnAction = function()
+                        customer.isBoarding = false
+                        self:onSetScroll(idx)
+                    end
+                else
+                    btnText = "승차"
+                    if isFull then
+                        btnAction = function() 
+                        end
+                    else
+                        btnText = "승차"
+                        btnAction = function()
+                            customer.isBoarding = true
+                            self:onSetScroll(idx)
+                        end
+                    end
+                end
+                local btnStyle = (not customer.isBoarding and isFull) and "Gray" or "Default"
+                ctx:addChild(UIFactory.createButton("Default", 210, 20, 80, 40, btnText, btnAction, btnStyle))
                 ctx:addChild(UIFactory.createPanel("Frame", 20, 0, 64, 64))
             end
         end
