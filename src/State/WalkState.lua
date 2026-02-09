@@ -26,15 +26,23 @@ function WalkState.onEnter()
         l:setPattern(l.leaved_pattern or nil)
     end
     ObjectManager:Remove('chara')
+    
+    local newBurg = DataStore.get('canvasMap').selectedBurg
+    local oldBurg = DataStore.get('currentTown')
+    DataStore.update('previousTown', oldBurg)
+    DataStore.update('currentTown', newBurg)
+    DataStore.update('canvasMap', DataStore.get('canvasMap')
+        .new(DataStore.get('map'), newBurg.name, 800, 600, 4.0))
 end
 
 function WalkState.onExit()
     local wagon = ObjectManager:Get('wagon')
+    local town = DataStore.get('currentTown')
     local passengers = ObjectManager:GetAll(function(obj)
         return obj.is_customer and obj.isBoarding
     end)
     for i, p in ipairs(passengers) do
-        p:EndTravel(wagon)
+        p:EndTravel(town and town.name or nil, wagon)
     end
 end
 

@@ -52,7 +52,12 @@ function Customer:StartTravel(idx, wagon)
     self.is_traveling = true
 end
 
-function Customer:EndTravel(wagon)
+function Customer:EndTravel(town, wagon)
+    print(town, self.data.destination)
+    if town == self.data.destination then
+        ObjectManager:Remove(self.key)
+        return
+    end
     self:StopSay()
     self:setPattern(self.arrive_pattern or nil)
 

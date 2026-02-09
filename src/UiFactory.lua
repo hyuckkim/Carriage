@@ -126,6 +126,11 @@ UIFactory.Fonts = {
         color = {255, 255, 255},
         align = "left"
     },
+    Gray = {
+        fontId = res.fontFile("assets/NanumSquareRoundR.ttf", "나눔스퀘어라운드 Regular", 20),
+        color = {100, 100, 100},
+        align = "left"
+    },
     Small = {
         fontId = res.fontFile("assets/NanumSquareRoundR.ttf", "나눔스퀘어라운드 Regular", 12),
         color = {255, 255, 255},
