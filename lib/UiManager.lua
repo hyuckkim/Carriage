@@ -164,16 +164,17 @@ function UIManager:AdjustScale(oldSize, newSize)
 
             comp.x = (anchorX / newSize) - (comp.w * ratioX)
             comp.y = ((anchorY - sh) / newSize + sh) - (comp.h * ratioY)
+            
+            -- 2. 화면 밖 탈출 방지 (가상 좌표계 기준)
+            local vW = sw / newSize
+            local vH = sh / newSize
+            
+            -- 좌우 제한
+            comp.x = math.max(0, math.min(comp.x, vW - comp.w))
+            -- 상하 제한 (0, sh 기준이므로 y는 sh-vH 와 sh-h 사이)
+            comp.y = math.max(sh - vH, math.min(comp.y, sh - comp.h))
         end
 
-        -- 2. 화면 밖 탈출 방지 (가상 좌표계 기준)
-        local vW = sw / newSize
-        local vH = sh / newSize
-        
-        -- 좌우 제한
-        comp.x = math.max(0, math.min(comp.x, vW - comp.w))
-        -- 상하 제한 (0, sh 기준이므로 y는 sh-vH 와 sh-h 사이)
-        comp.y = math.max(sh - vH, math.min(comp.y, sh - comp.h))
     end
 end
 
