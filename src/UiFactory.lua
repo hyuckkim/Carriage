@@ -1,6 +1,7 @@
 local NinePatch = require("lib.ninepatch")
 local UIButton = require("lib.UI.UIButton")
 local UIPanel   = require("lib.UI.UIPanel")
+local UICheckbox = require("lib.UI.UICheckbox")
 local DraggablePanel = require("lib.UI.DraggablePanel")
 local UIFactory = {}
 
@@ -11,6 +12,8 @@ UIFactory.Skins = {
         normal = { 0, 0, 64, 64, 16, 16, 16, 16 },
         pressed = { 128, 0, 64, 64, 16, 16, 16, 16 },
         hover = { 64, 0, 64, 64, 16, 16, 16, 16 },
+        unchecked = { 400, 112, 16, 16, 2, 2, 2, 2},
+        checked = { 416, 112, 16, 16, 2, 2, 2, 2},
     },
     Frame = {
         imagePath = "assets/ui_sheet.png",
@@ -63,6 +66,25 @@ function UIFactory.createPanel(style, x, y, w, h)
         return NinePatch.new(imgId, data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8])
     end
     return UIPanel.new(x, y, w, h, makeNP(skinData.normal))
+end
+
+function UIFactory.createCheckbox(style, x, y, w, h, onToggle, initialChecked)
+    -- 체크박스용 스킨 데이터 (예: skinData.checked, skinData.unchecked)
+    local skinData = UIFactory.Skins[style] or UIFactory.Skins.CheckboxDefault
+    local imgId = res.image(skinData.imagePath)
+
+    local function makeNP(data)
+        if not data then return nil end
+        -- data: { sx, sy, sw, sh, l, r, t, b }
+        return NinePatch.new(imgId, data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8])
+    end
+
+    local nps = {
+        checked   = makeNP(skinData.checked),
+        unchecked = makeNP(skinData.unchecked)
+    }
+
+    return UICheckbox.new(x, y, w, h, nps, onToggle, initialChecked)
 end
 
 function UIFactory.createDraggablePanel(style, x, y, w, h)

@@ -13,8 +13,12 @@ function DraggablePanel.new(x, y, w, h, np)
     return self
 end
 
+local mouseX = 0
+local mouseY = 0
+
 function DraggablePanel:update(dt, mx, my, ml, consumed)
-    -- 드래그 중이면 마우스 좌표에 따라 내 위치 갱신 (가장 먼저 수행)
+    mouseX = mx
+    mouseY = my
     if self.isDragging then
         if ml then
             self.x = mx - self.offsetX
@@ -37,10 +41,9 @@ function DraggablePanel:updateState(myHit, ml)
 
     -- 마우스가 내 위에 있고, 클릭이 막 발생했다면
     if myHit and ml then
-        local mx, my = is.mouse() -- 현재 정확한 좌표 획득
         self.isDragging = true
-        self.offsetX = mx - self.x
-        self.offsetY = my - self.y
+        self.offsetX = mouseX - self.x
+        self.offsetY = mouseY - self.y
     end
 end
 

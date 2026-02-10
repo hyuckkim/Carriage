@@ -10,10 +10,16 @@ return function ()
         Datastore.get('settings').mainSize = v
         panel:at(2):setText("게임 크기 배수: " .. v .. "x")
     end, 2))
+    panel:addChild(UIFactory.createText(20, 110, "UI 크기 배수: 1.0x", 'Small'))
+    panel:addChild(UIFactory.createSlider(20, 140, 160, 10, { 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0 }, function (v)
+        UIManager:AdjustScale(Datastore.get('settings').uiSize, v)
+        Datastore.get('settings').uiSize = v
+        panel:at(4):setText("게임 크기 배수: " .. v .. "x")
+    end, 3))
+
     panel:addChild(UIFactory.createButton("Default", 110, 250, 80, 40, "완료", function()
         UIManager:close(panel)
     end))
-
     panel.visible = false
     return panel
 end

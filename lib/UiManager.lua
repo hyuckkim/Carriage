@@ -1,3 +1,5 @@
+local DataStore = require("src.Datastore")
+
 local UIManager = {
     layers = {},    -- 렌더링 순서용 (List)
     registry = {},  -- ID로 검색용 (Map: [id] = component)
@@ -30,7 +32,13 @@ end
 
 -- 매 프레임 업데이트
 function UIManager:update(dt)
-    local mx, my, ml = is.mouse()
+    local x, y, ml = is.mouse()
+    local sw, sh = sys.getSize()
+
+    local size = DataStore.get('settings').uiSize
+    local mx = x / size
+    local my = (y - sh) / size + sh -- scale의 기준점(0, sh)에 따른 보정
+
     local consumed = false
     local clickedIndex = nil
     
@@ -120,9 +128,53 @@ function UIManager:close(component)
     end
 end
 
-function UIManager:closeAll()
+function UIManager:AdjustScale(oldSize, newSize)
+    local x, y = is.mouse() -- 실제 마우스 좌표
+    local sw, sh = sys.getSize()
+
+    -- UIManager에 직접 등록된 루트 패널들만 순회
     for _, comp in ipairs(self.layers) do
-        comp.visible = false
+        -- comp는 UIElement 인스턴스
+        local curW = comp.w * oldSize
+        local curH = comp.h * oldSize
+        
+        -- 현재 화면상의 실제 좌표 (0, sh 기준 스케일 적용)
+        local left = comp.x * oldSize
+        local right = left + curW
+        local top = (comp.y - sh) * oldSize + sh
+        local bottom = top + curH
+
+        -- 1. 마우스가 UI 영역 안에 있는지 체크
+        local isInside = (x >= left and x <= right and y >= top and y <= bottom)
+
+        if isInside then
+            -- [Inside] 마우스 아래의 상대적 지점 유지
+            local ratioX = (x - left) / curW
+            local ratioY = (y - top) / curH
+
+            comp.x = (x / newSize) - (comp.w * ratioX)
+            comp.y = ((y - sh) / newSize + sh) - (comp.h * ratioY)
+        else
+            -- [Outside] 마우스와 가장 가까운 모서리 유지
+            local anchorX = (x < left) and left or right
+            local anchorY = (y < top) and top or bottom
+            
+            local ratioX = (anchorX == left) and 0 or 1
+            local ratioY = (anchorY == top) and 0 or 1
+
+            comp.x = (anchorX / newSize) - (comp.w * ratioX)
+            comp.y = ((anchorY - sh) / newSize + sh) - (comp.h * ratioY)
+        end
+
+        -- 2. 화면 밖 탈출 방지 (가상 좌표계 기준)
+        local vW = sw / newSize
+        local vH = sh / newSize
+        
+        -- 좌우 제한
+        comp.x = math.max(0, math.min(comp.x, vW - comp.w))
+        -- 상하 제한 (0, sh 기준이므로 y는 sh-vH 와 sh-h 사이)
+        comp.y = math.max(sh - vH, math.min(comp.y, sh - comp.h))
     end
 end
+
 return UIManager

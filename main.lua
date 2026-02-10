@@ -51,7 +51,7 @@ function Init()
     UIManager:add("settingPanel", require("src.UI.settingPanel")())
     UIManager:add("customerPanel", require("src.UI.customerPanel")())
 
-    DataStore.get('fsm'):transition("prologue")
+    DataStore.get('fsm'):transition("idle")
     DataStore.registerTask('map', res.jsonAsync('map.json'))
 
     
@@ -84,7 +84,11 @@ function Draw()
         ObjectManager:Draw()
         DataStore.get('fsm'):draw()
     g.pop()
-    UIManager:draw()
+    g.push()
+        size = DataStore.get('settings').uiSize
+        g.scale(size, size, 0, sh)
+        UIManager:draw()
+    g.pop()
 end
 function OnKeyDown(key)
     if key == 0x20 then
@@ -99,14 +103,16 @@ end
 function OnMouseDown(x, y)
 end
 function OnMouseUp(x, y)
-    -- UI는 보통 화면 고정(Overlay)이므로 그대로 처리
-    local clicked = UIManager:dispatchClick(x, y, "left")
+    local size = DataStore.get('settings').uiSize
+    local worldX = x / size
+    local worldY = (y - sh) / size + sh -- scale의 기준점(0, sh)에 따른 보정
+    local clicked = UIManager:dispatchClick(worldX, worldY, "left")
     
     if not clicked then
         -- 월드 좌표로 보정 (Scale이 적용된 월드를 클릭할 때)
-        local size = DataStore.get('settings').mainSize
-        local worldX = x / size
-        local worldY = (y - sh) / size + sh -- scale의 기준점(0, sh)에 따른 보정
+        size = DataStore.get('settings').mainSize
+        worldX = x / size
+        worldY = (y - sh) / size + sh -- scale의 기준점(0, sh)에 따른 보정
         
         DataStore.get('fsm'):click(worldX, worldY)
 
