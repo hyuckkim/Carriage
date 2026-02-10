@@ -48,7 +48,7 @@ function Tutorial:Init(wagonX, wagonY)
     self.current_index = 1
 
     local advisor = Character.new('advisor', Anims.Advisor())
-    advisor.ox, advisor.oy = -32, 32
+    advisor.ox, advisor.oy = -32, -64
     advisor.sayOX, advisor.sayOY = 32, 20
 
     ObjectManager:Register(advisor)

@@ -17,7 +17,7 @@ function Customer.new(key, anim, data)
     self.data.traits = data.traits or {}
     self.data.budget = data.budget or 100
     self.data.destination = data.destination or "알 수 없음"
-    self.ox, self.oy = -40, 32
+    self.ox, self.oy = -40, -64
     self.sayOX, self.sayOY = 40, 20
     
     -- 필터링을 위한 플래그
@@ -35,16 +35,16 @@ function Customer:StartTravel(idx, wagon)
     
     print(idx)
     if idx == 1 then
-        self.x, self.y = wagon.x + 54, wagon.y - 30
+        self.x, self.y = wagon.x + 56, wagon.y - 28
         self.anim.flipX = true
     elseif idx == 2 then
-        self.x, self.y = wagon.x + 80, wagon.y - 26
+        self.x, self.y = wagon.x + 78, wagon.y - 26
         self.anim.flipX = true
     elseif idx == 3 then
-        self.x, self.y = wagon.x + 121, wagon.y - 27
+        self.x, self.y = wagon.x + 104, wagon.y - 26
         self.anim.flipX = false
     elseif idx == 4 then
-        self.x, self.y = wagon.x + 127, wagon.y - 51
+        self.x, self.y = wagon.x + 114, wagon.y - 31
         self.anim.flipX = false
     end
 

@@ -23,9 +23,9 @@ function IdleState.onEnter(initialCustomers)
     end
     if not ObjectManager:Get('chara') then
         local chara = Character.new('chara', Anims.chara())
-        chara.ox, chara.oy = -32, 32
+        chara.ox, chara.oy = -32, -64
         chara.sayOX, chara.sayOY = 32, 20
-        chara.x = wagon.x + 200
+        chara.x = wagon.x + 150
         chara.y = wagon.y
         chara:act('idle')
         ObjectManager:Register(chara)

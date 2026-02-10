@@ -15,6 +15,7 @@ local function redraw(self)
     end
 end
 return function ()
+    ---@class mainPanel: DraggablePanel
     local panel = UIFactory.createDraggablePanel("Default", 300, 700, 405, 300)
     panel:addChild(UIFactory.createButton("Default", 215, 10, 180, 50, "출발", function()
         local map = Datastore.get('canvasMap')
@@ -53,6 +54,10 @@ return function ()
             redraw(panel);
         end
     end))
+
+    panel.onInit = function (self)
+        redraw(self)
+    end
     
     panel.visible = false
     return panel
