@@ -18,6 +18,24 @@ local function initWindow()
     sys.setPos(0, 0)
     sys.setCursor()
 end
+local SETTINGS_PATH = "settings.json"
+local function initSettings()
+    
+    local loaded = res.loadTable(SETTINGS_PATH)
+    if loaded then
+        DataStore.update('settings', loaded)
+    else
+        DataStore.update('settings', { mainSize = 1.5, uiSize = 1.0, topmost = true, monitor = 1 })
+        loaded = DataStore.get('settings')
+    end
+    sys.setTopmost(loaded.topmost)
+
+    local monitorIdx = loaded.monitor
+    local monitors = sys.getMonitors()
+    if monitorIdx > #monitors then monitorIdx = 1 end
+    local m = monitors[monitorIdx]
+    sys.setPos(m.workX, m.workY)
+end
 
 local function initWagon()
     wagonX = 0
@@ -43,6 +61,7 @@ local debugger
 
 function Init()
     initWindow()
+    initSettings()
     initWagon()
 
     DataStore.update('fsm', mainStateMachine:init(wagonX, wagonY))

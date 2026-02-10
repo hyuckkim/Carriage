@@ -24,6 +24,7 @@ function g.pop() end
 function g.translate(x, y) end
 function g.scale(sx, sy, ox, oy) end
 function g.clip(x, y, w, h) end
+function g.offscreenCanvas() end
 
 ---@class is
 is = {}
@@ -46,6 +47,8 @@ function res.font(name, size) end
 function res.fontFile(path, name, size) end
 function res.json(path) end
 function res.jsonAsync(path) end
+function res.loadTable(path) end
+function res.saveTable(path) end
 
 ---@class sys
 sys = {}
@@ -58,4 +61,8 @@ function sys.getScreenSize() end
 function sys.getWorkArea() end
 function sys.showCursor(bool) end
 function sys.setCursor() end
+function sys.setTopmost(bool) end
+
+---@return {x: number, y: number, w: number, h: number, workX: number, workY: number, workW: number, workH: number}[]
+function sys.getMonitors() end
 function sys.quit() end
