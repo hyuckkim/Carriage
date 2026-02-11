@@ -20,7 +20,7 @@ local function initWindow()
     sys.setCursor()
 end
 local function initSettings()
-    SettingMethod.Init()
+    SettingMethod.Init("settings.json")
     SettingMethod.ApplyAll()
 end
 

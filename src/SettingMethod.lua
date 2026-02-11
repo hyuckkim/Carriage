@@ -1,4 +1,4 @@
-local SETTINGS_PATH = "settings.json"
+local SETTINGS_PATH = ""
 
 local SettingMethod = {}
 local Datastore = require("src.Datastore")
@@ -59,7 +59,8 @@ function SettingMethod.GetUIPositionTable()
     return positionData
 end
 
-function SettingMethod.Init()
+function SettingMethod.Init(settingPath)
+    SETTINGS_PATH = settingPath
     local data = res.loadTable(SETTINGS_PATH)
     if not data then data = {} end
 
