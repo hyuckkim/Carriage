@@ -57,12 +57,20 @@ function is.mouse() end
 
 ---@class res
 res = {}
-
 function res.image(path) end
 function res.font(name, size) end
 function res.fontFile(path, name, size) end
 function res.json(path) end
+
+---@return Task
 function res.jsonAsync(path) end
+
+---@class Task
+---@field isDone boolean
+local Task = {}
+function Task.check() end
+function Task.getResult() end
+
 function res.loadTable(path) end
 function res.saveTable(path, table) end
 
