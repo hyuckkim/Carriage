@@ -19,10 +19,6 @@ local function initWindow()
     sys.setPos(0, 0)
     sys.setCursor()
 end
-local function initSettings()
-    SettingMethod.Init("settings.json")
-    SettingMethod.ApplyAll()
-end
 
 local function initWagon()
     wagonX = 0
@@ -49,6 +45,7 @@ local debugger
 function Init()
     initWindow()
     initWagon()
+    SettingMethod.Init("settings.json")
 
     DataStore.update('fsm', mainStateMachine:init(wagonX, wagonY))
 
@@ -59,8 +56,7 @@ function Init()
     DataStore.get('fsm'):transition("idle")
     DataStore.registerTask('map', res.jsonAsync('map.json'))
 
-    initSettings()
-    
+    SettingMethod.ApplyAll()
     debugger = CharacterFactory.createCustomer({
         x = 0, y = 0
     })

@@ -86,7 +86,7 @@ function BakeComprehensiveMap(mapData, centerTownName, width, height, zoom)
     canvas:batchBegin()
         -- 배경
         canvas:color(30, 50, 100)
-        canvas:rect(0, 0, width, height)
+        canvas:rect(0, 0, width, height, true)
 
         -- A. 지형 셀 (화면 범위 내)
         local cIdx = 1
@@ -148,10 +148,10 @@ function BakeComprehensiveMap(mapData, centerTownName, width, height, zoom)
                 -- 중심 마을은 빨간색, 나머지는 흰색
                 if b.name == centerTownName then
                     canvas:color(255, 50, 50)
-                    canvas:circle(sx, sy, 6)
+                    canvas:circle(sx, sy, 6, true)
                 else
                     canvas:color(255, 255, 255)
-                    canvas:circle(sx, sy, 3)
+                    canvas:circle(sx, sy, 3, true)
                 end
                 canvas:text(0, b.name, sx + 8, sy - 8)
             end
@@ -172,7 +172,7 @@ function Update(dt)
         map.data = map.task:getResult()
         
         -- 로드가 끝나면 바로 "London" 지도를 굽습니다.
-        townMiniMap = BakeComprehensiveMap(map.data, "Er Oktar", 300, 300, 4.0)
+        townMiniMap = BakeComprehensiveMap(map.data, "Buyana", 300, 300, 4.0)
         print("미니 맵 생성 완료: " .. type(townMiniMap))
     end
 end

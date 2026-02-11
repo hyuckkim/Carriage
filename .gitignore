@@ -1,6 +1,5 @@
 .vscode
-todoki.pdb
-todoki.exe
+todoki.*
 
 assets/
 settings.json

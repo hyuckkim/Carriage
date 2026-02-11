@@ -45,7 +45,7 @@ return function ()
         local map = Datastore.get('canvasMap')
         if map then
             local town = map:getClickTown(x, y, 200, 150, 200, 150, 400, 300)
-            if not town then return end
+            if not town then redraw(panel) return end
             local route = map:findRoadPathWithLimit(town.name, Datastore.get('currentTown').name)
             if not route or town.name == Datastore.get('currentTown').name then
                 map.selectedBurg = nil
@@ -58,7 +58,9 @@ return function ()
     panel.onInit = function (self)
         redraw(self)
     end
-    
+    panel.onUpdate = function (self)
+        -- polling logic...
+    end
     panel.visible = false
     return panel
 end

@@ -34,8 +34,8 @@ function Canvas:batchBegin() end
 function Canvas:batchEnd() end
 function Canvas:release() end
 function Canvas:color(r, g, b, a) end
-function Canvas:rect(x, y, w, h) end
-function Canvas:circle(x, y, r) end
+function Canvas:rect(x, y, w, h, isFilled) end
+function Canvas:circle(x, y, r, isFilled) end
 function Canvas:polyline(polygonXYXY, closed, strokeWidth) end
 function Canvas:polygon(polygonXYXY) end
 function Canvas:text(fontId, name, x, y) end
@@ -57,6 +57,7 @@ function is.mouse() end
 
 ---@class res
 res = {}
+---@return number
 function res.image(path) end
 function res.font(name, size) end
 function res.fontFile(path, name, size) end

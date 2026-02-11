@@ -40,14 +40,17 @@ return function ()
     end, Datastore.get('settings').topmost or true))
 
     -- 4. 모니터 변경 버튼
-    monitorIdx = s.monitor
-    panel:addChild(UIFactory.createButton("Default", 10, 200, 180, 40, "모니터 변경: " .. s.monitor, function()
+    local currentMonitor = s.monitor
+    local monitorBtn
+    monitorBtn = UIFactory.createButton("Default", 10, 200, 180, 40, string.format("모니터 변경: %d", currentMonitor), function()
         local monitors = sys.getMonitors()
-        monitorIdx = monitorIdx + 1
-        if monitorIdx > #monitors then monitorIdx = 1 end
-        SettingMethod.ApplyMonitorIdx(monitorIdx)
-        panel:at(8):setText("모니터 변경: " .. monitorIdx)
-    end))
+        currentMonitor = currentMonitor + 1
+        if currentMonitor > #monitors then currentMonitor = 1 end
+        
+        SettingMethod.ApplyMonitorIdx(currentMonitor)
+        monitorBtn:setText(string.format("모니터 변경: %d", currentMonitor))
+    end)
+    panel:addChild(monitorBtn)
 
     -- 5. 완료/닫기 버튼
     panel:addChild(UIFactory.createButton("Default", 90, 250, 100, 40, "완료", function()

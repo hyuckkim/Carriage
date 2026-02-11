@@ -39,15 +39,15 @@ if not mapData or not mapData.pack then return nil end
     local poly = {}
     return coroutine.create(function()
     coroutine.yield()
-    
     canvas:batchBegin()
         -- 배경
         canvas:color(30, 50, 100)
-        canvas:rect(0, 0, width, height)
+        canvas:rect(0, 0, width, height, true)
 
         -- A. 지형 셀 (화면 범위 내)
         local cIdx = 1
         local count = 0
+
         while true do
             local cell = pack.cells[cIdx]
             if not cell or type(cell) ~= "userdata" then break end
@@ -132,10 +132,10 @@ if not mapData or not mapData.pack then return nil end
                 -- 중심 마을은 빨간색, 나머지는 흰색
                 if b.name == centerTownName then
                     canvas:color(255, 50, 50)
-                    canvas:circle(sx, sy, 6)
+                    canvas:circle(sx, sy, 6, true)
                 else
                     canvas:color(255, 255, 255)
-                    canvas:circle(sx, sy, 3)
+                    canvas:circle(sx, sy, 3, true)
                 end
             end
             bIdx = bIdx + 1
@@ -178,11 +178,24 @@ end
 
 function CanvasMap:Draw(x, y, w, h, sx, sy, sw, sh)
     -- 1. 먼저 구워진 캔버스를 그립니다.
+    g.color(40, 70, 130)
+    g.rect(x, y, w, h)
     self.canvas:draw(x, y, w, h, sx, sy, sw, sh)
 
     if not self.drawnAll then
+    -- 상태 확인
+        local status = coroutine.status(self.loader)
         
-        coroutine.resume(self.loader)
+        if status == "dead" then
+            print("DEBUG: 코루틴이 죽어있습니다. (더 이상 실행 불가)")
+            self.drawnAll = true -- 더 이상 시도하지 않도록 플래그 처리
+        else
+            -- resume의 반환값(success, error_msg)을 반드시 확인해야 합니다.
+            local success, err = coroutine.resume(self.loader)
+            if not success then
+                print("DEBUG 코루틴 내부 에러 발생!!: ", err)
+            end
+        end
     end
 
     -- 2. 선택된 마을이 있다면 그 위에 오버레이를 덧그립니다.
@@ -210,7 +223,7 @@ function CanvasMap:Draw(x, y, w, h, sx, sy, sw, sh)
         if screenX >= x and screenX <= x + w and screenY >= y and screenY <= y + h then
             -- 강조 효과 (노란색 원)
             g.color(255, 255, 0, 200)
-            g.circle(screenX, screenY, 8 * ratioX) 
+            g.circle(screenX, screenY, 8 * ratioX)
             
             -- 이름표
             g.color(255, 255, 255)

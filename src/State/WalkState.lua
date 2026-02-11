@@ -1,18 +1,87 @@
 local ObjectManager = require("lib.ObjectManager")
 local DataStore = require("src.Datastore")
+local CanvasMap = require("src.UI.canvasMap")
+local getPlant = require("src.Object.Grass")
+local CharacterFactory = require("src.CharacterFactory")
+
 
 local workthrough = 0
-local endto = 500
-local speed = 30
+local endto = 5000
+local speed = 300
+local grassCounter = 0
+
+local distBuffer = 0 
+local nextSpawnDist = math.random(20, 50)
 
 local WalkState = {}
+
+local function genGrass()
+    local wagon = ObjectManager:Get('wagon')
+    if not wagon then return end
+    
+    local screenW, _ = sys.getSize()
+    local sprite, name = getPlant()
+    
+    local isTree = string.find(name, "tree") or string.find(name, "pine")
+    grassCounter = grassCounter + 1
+    ObjectManager:Register({
+        key = "env_" .. grassCounter .. "_" .. math.random(1000),
+        x = screenW + 100,
+        y = wagon.y,
+        layer = isTree and -40 or -30,
+        sprite = sprite,
+        draw = function(self) self.sprite:draw(self.x, self.y) end,
+        update = function() end
+    })
+end
+local function walkWithGrass(dt)
+    -- getPlant는 상단에서 require했으므로 항상 존재합니다.
+    local moveStep = dt * 0.001 * speed
+    distBuffer = distBuffer + moveStep
+
+    if distBuffer >= nextSpawnDist then
+        distBuffer = 0
+        nextSpawnDist = math.random(40, 120)
+        genGrass()
+    end
+end
+
+local customersSpawned = false
+local function walkWithStation()
+    local wagon = ObjectManager:Get('wagon')
+    if customersSpawned then return end
+    local screenW, _ = sys.getSize()
+    
+    -- 마차가 앞으로 더 가야 할 거리
+    local remainingDist = endto - workthrough
+    
+    -- 마차의 현재 위치 + 남은 거리 = 마차가 최종 멈출 화면 좌표
+    local finalWagonX = 150 + remainingDist -- (150은 wagon.x 초기값이라 가정)
+
+    -- 최종 목적지가 화면 오른쪽 끝에 진입하는 순간!
+    if finalWagonX <= screenW then
+        customersSpawned = true
+        
+        for i = 1, 6 do
+            local spawnX = finalWagonX + math.random(50, 350)
+            
+            CharacterFactory.createCustomer({
+                x = spawnX,
+                y = wagon.y,
+                isBoarding = false -- 아직 안 탄 상태
+            })
+        end
+    end
+end
+
 function WalkState.onEnter()
     local wagon = ObjectManager:Get('wagon')
     wagon:act('walk')
     local wagonTop = ObjectManager:Get('wagonTop')
     wagonTop:act('walk')
     workthrough = 0
-    
+    customersSpawned = false
+
     local passengers = ObjectManager:GetAll(function(obj)
         return obj.is_customer and obj.isBoarding
     end)
@@ -31,7 +100,7 @@ function WalkState.onEnter()
     local oldBurg = DataStore.get('currentTown')
     DataStore.update('previousTown', oldBurg)
     DataStore.update('currentTown', newBurg)
-    DataStore.update('canvasMap', DataStore.get('canvasMap')
+    DataStore.update('canvasMap', CanvasMap
         .new(DataStore.get('map'), newBurg.name, 800, 600, 4.0))
 end
 
@@ -52,7 +121,9 @@ function WalkState.onUpdate(dt)
     if workthrough >= endto then
         DataStore.get('fsm'):transition('idle')
     end
-    
+    walkWithGrass(dt)
+    walkWithStation()
+
     local leaved = ObjectManager:GetAll(function(obj)
         return obj.x < -1000
     end)
@@ -60,6 +131,7 @@ function WalkState.onUpdate(dt)
         ObjectManager:Remove(p.key)
     end
 end
+
 
 function WalkState.onDraw()
     local wagon = ObjectManager:Get('wagon')

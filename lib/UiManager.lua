@@ -120,6 +120,11 @@ function UIManager:close(component)
         component.isDragging = false
     end
 end
+function UIManager:closeAll()
+    for _, v in ipairs(self.layers) do
+       v.visible = false
+    end
+end
 
 function UIManager:AdjustScale(oldSize, newSize)
     local x, y = is.mouse() -- 실제 마우스 좌표

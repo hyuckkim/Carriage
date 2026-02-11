@@ -7,20 +7,12 @@ local Anims = require("src.Anims")
 local IdleState = {}
 
 
-function IdleState.onEnter(initialCustomers)
+function IdleState.onEnter()
     local wagon = ObjectManager:Get('wagon')
     wagon:act('idle')
     local wagonTop = ObjectManager:Get('wagonTop')
     wagonTop:act('idle')
 
-    if not initialCustomers then
-        local wagon = ObjectManager:Get('wagon')
-        for i = 1, 8 do
-            CharacterFactory.createCustomer({
-                x = wagon.x + 50 + math.random() * 400, y = wagon.y
-            })
-        end
-    end
     if not ObjectManager:Get('chara') then
         local chara = Character.new('chara', Anims.chara())
         chara.ox, chara.oy = -32, -64
