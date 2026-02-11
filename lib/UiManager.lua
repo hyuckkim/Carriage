@@ -84,6 +84,18 @@ function UIManager:dispatchClick(x, y, button)
     end
     return false
 end
+function UIManager:isHit(mx, my)
+    for i = #self.layers, 1, -1 do
+        local comp = self.layers[i]
+        if comp.visible then
+            if mx >= comp.x and mx <= comp.x + comp.w and
+               my >= comp.y and my <= comp.y + comp.h then
+                return true
+            end
+        end
+    end
+    return false
+end
 
 function UIManager:open(target, ...)
     if not target then return end

@@ -129,3 +129,37 @@ end
 function OnRightMouseUp(x, y)
     local clicked = UIManager:dispatchClick(x, y, "right")
 end
+
+function CheckHit(x, y)
+    if not (DataStore and UIManager and ObjectManager and sh) then return true end
+
+    local settings = DataStore.get('settings')
+    if not settings then return true end
+
+    -- [추가] 1. UI 영역 체크
+    local uiSize = settings.uiSize or 1.0
+    local uiX, uiY = x / uiSize, (y - sh) / uiSize + sh
+    
+    -- UI가 떠 있고, 그 영역 안에 마우스가 있다면 클릭 접수(true)
+    if UIManager.isHit and UIManager:isHit(uiX, uiY) then
+        return true
+    end
+
+    -- 2. 마차 영역 체크
+    local mainSize = settings.mainSize or 1.0
+    local worldX, worldY = x / mainSize, (y - sh) / mainSize + sh
+    local wagon = ObjectManager:Get('wagon')
+    
+    if wagon and wagon.anim then -- anim 존재 여부 확인 (필수)
+        -- wagon.anim.fw 가 nil일 경우를 대비해 기본값 0 설정
+        local fw = wagon.anim.fw or 0
+        local fh = wagon.anim.fh or 0
+        
+        if worldX >= wagon.x and worldX <= wagon.x + fw and
+           worldY <= wagon.y and worldY >= wagon.y - fh then
+            return true 
+        end
+    end
+
+    return false
+end

@@ -141,50 +141,45 @@ function UIFactory.createSlider(x, y, w, h, items, onChange, default)
     return slider
 end
 
--- 기본 텍스트 스타일 정의
 UIFactory.Fonts = {
-    Default = {
-        fontId = res.fontFile("assets/NanumSquareRoundR.ttf", "나눔스퀘어라운드 Regular", 20),
-        color = {255, 255, 255},
-        align = "left"
-    },
-    Gray = {
-        fontId = res.fontFile("assets/NanumSquareRoundR.ttf", "나눔스퀘어라운드 Regular", 20),
-        color = {100, 100, 100},
-        align = "left"
-    },
-    Small = {
-        fontId = res.fontFile("assets/NanumSquareRoundR.ttf", "나눔스퀘어라운드 Regular", 12),
-        color = {255, 255, 255},
-        align = "left"
-    },
-    Trait = {
-        fontId = res.fontFile("assets/NanumSquareRoundR.ttf", "나눔스퀘어라운드 Regular", 12),
-        color = {255, 255, 200},
-        align = "left"
-    },
-    Trait_positive = {
-        fontId = res.fontFile("assets/NanumSquareRoundR.ttf", "나눔스퀘어라운드 Regular", 12),
-        color = {200, 255, 200},
-        align = "left"
-    },
-    Trait_negative = {
-        fontId = res.fontFile("assets/NanumSquareRoundR.ttf", "나눔스퀘어라운드 Regular", 12),
-        color = {255, 200, 200},
-        align = "left"
-    },
-    Quote = {
-        fontId = res.fontFile("assets/NanumSquareRoundR.ttf", "나눔스퀘어라운드 Regular", 10),
-        color = {0, 0, 0},
-        align = "left"
-    }
+    Default = { path = "assets/NanumSquareRoundR.ttf", name = "나눔스퀘어라운드 Regular", size = 20, color = {255, 255, 255}, align = "left" },
+    Gray    = { path = "assets/NanumSquareRoundR.ttf", name = "나눔스퀘어라운드 Regular", size = 20, color = {100, 100, 100}, align = "left" },
+    Small   = { path = "assets/NanumSquareRoundR.ttf", name = "나눔스퀘어라운드 Regular", size = 12, color = {255, 255, 255}, align = "left" },
+    Trait   = { path = "assets/NanumSquareRoundR.ttf", name = "나눔스퀘어라운드 Regular", size = 12, color = {255, 255, 200}, align = "left" },
+    Trait_positive = { path = "assets/NanumSquareRoundR.ttf", name = "나눔스퀘어라운드 Regular", size = 12, color = {200, 255, 200}, align = "left" },
+    Trait_negative = { path = "assets/NanumSquareRoundR.ttf", name = "나눔스퀘어라운드 Regular", size = 12, color = {255, 200, 200}, align = "left" },
+    Quote   = { path = "assets/NanumSquareRoundR.ttf", name = "나눔스퀘어라운드 Regular", size = 10, color = {0, 0, 0}, align = "left" }
 }
+
+-- 폰트 ID 캐싱용 테이블 (중복 로드 방지)
+local _fontIdCache = {}
+
+-- 실제 폰트 ID를 가져오는 내부 함수
+function UIFactory._getFontId(style)
+    -- 고유 키 생성 (경로 + 사이즈)
+    local key = style.path .. "_" .. tostring(style.size)
+    
+    if not _fontIdCache[key] then
+        -- 이 시점에는 C++의 res.fontFile이 반드시 등록되어 있음
+        _fontIdCache[key] = res.fontFile(style.path, style.name, style.size)
+        
+        -- 로드 실패 시 디버깅용 로그
+        if _fontIdCache[key] == -1 then
+            print("[Lua Error] Failed to load font: " .. style.path)
+        end
+    end
+    
+    return _fontIdCache[key]
+end
 
 function UIFactory.createText(x, y, str, styleName)
     local style = UIFactory.Fonts[styleName] or UIFactory.Fonts.Default
-    local UIText = require("lib.UI.UIText")
     
-    local txt = UIText.new(x, y, str, style.fontId, style.color)
+    -- 필요할 때 ID를 받아옴
+    local fontId = UIFactory._getFontId(style)
+    
+    local UIText = require("lib.UI.UIText")
+    local txt = UIText.new(x, y, str, fontId, style.color)
     txt.align = style.align
     
     return txt
