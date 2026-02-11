@@ -24,7 +24,23 @@ function g.pop() end
 function g.translate(x, y) end
 function g.scale(sx, sy, ox, oy) end
 function g.clip(x, y, w, h) end
-function g.offscreenCanvas() end
+
+---@return Canvas
+function g.offscreenCanvas(w, h) end
+
+---@class Canvas
+local Canvas = {}
+function Canvas:batchBegin() end
+function Canvas:batchEnd() end
+function Canvas:release() end
+function Canvas:color(r, g, b, a) end
+function Canvas:rect(x, y, w, h) end
+function Canvas:circle(x, y, r) end
+function Canvas:polyline(polygonXYXY, closed, strokeWidth) end
+function Canvas:polygon(polygonXYXY) end
+function Canvas:text(fontId, name, x, y) end
+function Canvas:image(imgId, x, y, w, h, sx, sy, sw, sh) end
+function Canvas:draw(x, y, w, h, sx, sy, sw, sh) end
 
 ---@class is
 is = {}
@@ -48,7 +64,7 @@ function res.fontFile(path, name, size) end
 function res.json(path) end
 function res.jsonAsync(path) end
 function res.loadTable(path) end
-function res.saveTable(path) end
+function res.saveTable(path, table) end
 
 ---@class sys
 sys = {}

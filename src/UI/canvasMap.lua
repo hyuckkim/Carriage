@@ -43,7 +43,7 @@ if not mapData or not mapData.pack then return nil end
     canvas:batchBegin()
         -- 배경
         canvas:color(30, 50, 100)
-        canvas:rect(0, 0, width, height, true)
+        canvas:rect(0, 0, width, height)
 
         -- A. 지형 셀 (화면 범위 내)
         local cIdx = 1
@@ -132,10 +132,10 @@ if not mapData or not mapData.pack then return nil end
                 -- 중심 마을은 빨간색, 나머지는 흰색
                 if b.name == centerTownName then
                     canvas:color(255, 50, 50)
-                    canvas:circle(sx, sy, 6, true)
+                    canvas:circle(sx, sy, 6)
                 else
                     canvas:color(255, 255, 255)
-                    canvas:circle(sx, sy, 3, true)
+                    canvas:circle(sx, sy, 3)
                 end
             end
             bIdx = bIdx + 1

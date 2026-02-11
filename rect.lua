@@ -86,7 +86,7 @@ function BakeComprehensiveMap(mapData, centerTownName, width, height, zoom)
     canvas:batchBegin()
         -- 배경
         canvas:color(30, 50, 100)
-        canvas:rect(0, 0, width, height, true)
+        canvas:rect(0, 0, width, height)
 
         -- A. 지형 셀 (화면 범위 내)
         local cIdx = 1
@@ -112,9 +112,6 @@ function BakeComprehensiveMap(mapData, centerTownName, width, height, zoom)
                 if #poly >= 6 then 
                     -- 1. 먼저 면을 채우고
                     canvas:polygon(poly) 
-                    
-                    -- 2. [추가] 동일한 색상으로 외곽선을 그려서 틈새를 메움
-                    -- 두께는 1.0~1.5 정도면 충분합니다.
                     canvas:polyline(poly, true, 1.0) 
                 end
             end
@@ -151,10 +148,10 @@ function BakeComprehensiveMap(mapData, centerTownName, width, height, zoom)
                 -- 중심 마을은 빨간색, 나머지는 흰색
                 if b.name == centerTownName then
                     canvas:color(255, 50, 50)
-                    canvas:circle(sx, sy, 6, true)
+                    canvas:circle(sx, sy, 6)
                 else
                     canvas:color(255, 255, 255)
-                    canvas:circle(sx, sy, 3, true)
+                    canvas:circle(sx, sy, 3)
                 end
                 canvas:text(0, b.name, sx + 8, sy - 8)
             end

@@ -8,6 +8,7 @@ local mainStateMachine = require("src.mainStateMachine")
 local CanvasMap = require("src.UI.canvasMap")
 local Character = require("src.Object.character")
 local CharacterFactory = require("src.CharacterFactory")
+local SettingMethod = require("src.SettingMethod")
 
 local sw, sh -- 창 위치
 local wagonX, wagonY -- 마차 위치
@@ -18,23 +19,9 @@ local function initWindow()
     sys.setPos(0, 0)
     sys.setCursor()
 end
-local SETTINGS_PATH = "settings.json"
 local function initSettings()
-    
-    local loaded = res.loadTable(SETTINGS_PATH)
-    if loaded then
-        DataStore.update('settings', loaded)
-    else
-        DataStore.update('settings', { mainSize = 1.5, uiSize = 1.0, topmost = true, monitor = 1 })
-        loaded = DataStore.get('settings')
-    end
-    sys.setTopmost(loaded.topmost)
-
-    local monitorIdx = loaded.monitor
-    local monitors = sys.getMonitors()
-    if monitorIdx > #monitors then monitorIdx = 1 end
-    local m = monitors[monitorIdx]
-    sys.setPos(m.workX, m.workY)
+    SettingMethod.Init()
+    SettingMethod.ApplyAll()
 end
 
 local function initWagon()

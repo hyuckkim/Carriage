@@ -5,23 +5,16 @@ local UIManager = {
     registry = {},  -- ID로 검색용 (Map: [id] = component)
 }
 
---- 컴포넌트를 이름과 함께 등록
--- @param id 패널의 고유 식별자 (string)
--- @param component 패널 객체
 function UIManager:add(id, component)
-    -- 1. ID 중복 체크 (방어 코드)
     if self.registry[id] then
         print(string.format("[Warn] UIManager: ID '%s'가 이미 존재합니다. 덮어씌웁니다.", id))
     end
 
-    -- 2. 검색용 맵에 등록
     self.registry[id] = component
-    component.id = id -- 컴포넌트 스스로도 자기 이름을 알게 함
+    component.id = id
     
-    -- 3. 렌더링용 리스트에 삽입
     table.insert(self.layers, component)
     
-    -- 등록 시에는 일단 안 보이게 설정
     component.visible = false
 end
 
