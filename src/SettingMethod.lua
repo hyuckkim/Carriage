@@ -61,8 +61,8 @@ end
 
 function SettingMethod.Init(settingPath)
     SETTINGS_PATH = settingPath
-    local data = res.loadTable(SETTINGS_PATH)
-    if not data then data = {} end
+    local data = res.loadTable(SETTINGS_PATH) or {}
+    data = SettingMethod.GetFilled(data)
 
     Datastore.update('settings', data)
     return data

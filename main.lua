@@ -48,7 +48,6 @@ local debugger
 
 function Init()
     initWindow()
-    initSettings()
     initWagon()
 
     DataStore.update('fsm', mainStateMachine:init(wagonX, wagonY))
@@ -60,6 +59,7 @@ function Init()
     DataStore.get('fsm'):transition("idle")
     DataStore.registerTask('map', res.jsonAsync('map.json'))
 
+    initSettings()
     
     debugger = CharacterFactory.createCustomer({
         x = 0, y = 0

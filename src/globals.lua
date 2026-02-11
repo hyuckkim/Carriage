@@ -23,3 +23,12 @@ function MergeTable(t1, t2)
     for k, v in pairs(t2) do result[k] = v end
     return result
 end
+
+function FindIndex(tbl, target)
+    for i, v in ipairs(tbl) do
+        if v == target then
+            return i
+        end
+    end
+    return 1 -- 기본값
+end
