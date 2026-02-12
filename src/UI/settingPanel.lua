@@ -36,7 +36,7 @@ return function ()
     panel:addChild(UIFactory.createText(20, 165, "항상 맨 위에 표시", 'Small'))
     panel:addChild(UIFactory.createCheckbox("Default", 160, 160, 24, 24, function(v)
         SettingMethod.ApplyAlwayTop(v)
-    end, Datastore.get('settings').topmost or true))
+    end, Datastore.get('settings').topmost ~= false))
 
     -- 4. 모니터 변경 버튼
     local currentMonitor = s.monitor
