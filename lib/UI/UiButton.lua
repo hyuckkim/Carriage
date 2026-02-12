@@ -19,12 +19,6 @@ function UIButton.new(x, y, w, h, skins, text, onClick, color)
 end
 function UIButton:setText(newText)
     self.text = newText
-    -- 여기서 딱 한 번만 호출!
-    if self.text ~= "" then
-        self.tw, self.th = g.fontSize(0, self.text)
-    else
-        self.tw, self.th = 0, 0
-    end
 end
 
 function UIButton:updateState(myHit, ml)
@@ -44,10 +38,11 @@ function UIButton:draw()
 
     -- 텍스트 드로우 (가운데 정렬)
     g.color(self.color[1], self.color[2], self.color[3])
+    local tw, th = g.fontSize(0, self.text)
     if self.text and #self.text > 0 then
         local ax, ay = self:getAbsolutePos()
-        local tx = ax + (self.w - self.tw) / 2
-        local ty = ay + (self.h - self.th) / 2
+        local tx = ax + (self.w - tw) / 2
+        local ty = ay + (self.h - th) / 2
         g.text(0, self.text, tx, ty)
     end
 
