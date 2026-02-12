@@ -1,39 +1,20 @@
 local ObjectManager = require("lib.ObjectManager")
 local DataStore = require("src.Datastore")
 local CanvasMap = require("src.UI.canvasMap")
-local getPlant = require("src.Object.Grass")
 local CharacterFactory = require("src.CharacterFactory")
+local genGrass = require("src.GenGrass")
 
 
 local workthrough = 0
 local endto = 5000
 local speed = 300
-local grassCounter = 0
 
 local distBuffer = 0 
 local nextSpawnDist = math.random(20, 50)
 
 local WalkState = {}
 
-local function genGrass()
-    local wagon = ObjectManager:Get('wagon')
-    if not wagon then return end
-    
-    local screenW, _ = sys.getSize()
-    local sprite, name = getPlant()
-    
-    local isTree = string.find(name, "tree") or string.find(name, "pine")
-    grassCounter = grassCounter + 1
-    ObjectManager:Register({
-        key = "env_" .. grassCounter .. "_" .. math.random(1000),
-        x = screenW + 100,
-        y = wagon.y,
-        layer = isTree and -40 or -30,
-        sprite = sprite,
-        draw = function(self) self.sprite:draw(self.x, self.y) end,
-        update = function() end
-    })
-end
+
 local function walkWithGrass(dt)
     -- getPlant는 상단에서 require했으므로 항상 존재합니다.
     local moveStep = dt * 0.001 * speed
@@ -42,7 +23,8 @@ local function walkWithGrass(dt)
     if distBuffer >= nextSpawnDist then
         distBuffer = 0
         nextSpawnDist = math.random(40, 120)
-        genGrass()
+        local screenW, _ = sys.getSize()
+        genGrass(screenW)
     end
 end
 

@@ -19,6 +19,7 @@ function IdleState.onEnter()
         chara.sayOX, chara.sayOY = 32, 20
         chara.x = wagon.x + 150
         chara.y = wagon.y
+        chara.anim.flipX = true
         chara:act('idle')
         ObjectManager:Register(chara)
     end

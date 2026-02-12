@@ -9,6 +9,7 @@ local CanvasMap = require("src.UI.canvasMap")
 local Character = require("src.Object.character")
 local CharacterFactory = require("src.CharacterFactory")
 local SettingMethod = require("src.SettingMethod")
+local genGrass = require("src.GenGrass")
 
 local sw, sh -- 창 위치
 local wagonX, wagonY -- 마차 위치
@@ -40,11 +41,23 @@ local function initWagon()
     wagonTop.oy = -96
     ObjectManager:Register(wagonTop)
 end
+local function initGrass()
+    local screenW, _ = sys.getSize()
+    -- 화면 전체 너비에 걸쳐 미리 풀을 깔아줍니다.
+    -- 약 20~50 픽셀 간격으로 화면 끝까지 genGrass를 미리 실행
+    local initPos = 0
+    while initPos < screenW + 200 do
+        genGrass(initPos) -- genGrass가 x좌표를 인자로 받을 수 있게 수정하면 더 정확합니다.
+        initPos = initPos + math.random(30, 80)
+    end
+end
+
 local debugger
 
 function Init()
     initWindow()
     initWagon()
+    initGrass()
     SettingMethod.Init("settings.json")
 
     DataStore.update('fsm', mainStateMachine:init(wagonX, wagonY))
