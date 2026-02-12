@@ -1,7 +1,7 @@
 local ObjectManager = require("lib.ObjectManager")
 local DataStore = require("src.Datastore")
 local CanvasMap = require("src.UI.canvasMap")
-local CharacterFactory = require("src.CharacterFactory")
+local CharacterFactory = require("src.Table.CharacterFactory")
 local genGrass = require("src.GenGrass")
 
 local workthrough = 0

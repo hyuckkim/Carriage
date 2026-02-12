@@ -1,6 +1,6 @@
 local ObjectManager = require("lib.ObjectManager")
 local Datastore = require("src.Datastore")
-local Anims = require("src.Anims")
+local Anims = require("src.Table.Anims")
 local Character = require("src.Object.character")
 local Customer = require("src.Object.customer")
 

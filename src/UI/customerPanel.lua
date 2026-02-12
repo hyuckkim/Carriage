@@ -4,7 +4,7 @@ local ObjectManager = require("lib.ObjectManager")
 local UIElement = require("lib.UI.UIElement")
 local UIViewport = require ("lib.UI.UIViewport")
 
-local UIFactory = require("src.UiFactory")
+local UIFactory = require("src.Table.UiFactory")
 local Datastore = require("src.Datastore")
 
 local traitStyles = {

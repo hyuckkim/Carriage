@@ -1,6 +1,6 @@
 local ObjectManager = require("lib.ObjectManager")
-local UIFactory = require("src.UiFactory")
-local EmotesFactory = require("src.emotes")
+local UIFactory = require("src.Table.UiFactory")
+local EmotesFactory = require("src.Table.emotes")
 local Object = require("src.Object.object")
 
 ---@class Character: Object

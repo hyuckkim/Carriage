@@ -1,5 +1,5 @@
 local UIManager = require("lib.UIManager")
-local UIFactory = require("src.UiFactory")
+local UIFactory = require("src.Table.UiFactory")
 local Datastore = require("src.Datastore")
 local SettingMethod = require("src.SettingMethod")
 

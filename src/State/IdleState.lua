@@ -1,8 +1,8 @@
-local CharacterFactory = require("src.CharacterFactory")
+local CharacterFactory = require("src.Table.CharacterFactory")
 local UIManager = require("lib.UIManager")
 local ObjectManager = require("lib.ObjectManager")
 local Character = require("src.Object.character")
-local Anims = require("src.Anims")
+local Anims = require("src.Table.Anims")
 
 local IdleState = {}
 

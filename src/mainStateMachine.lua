@@ -1,5 +1,5 @@
 local StateMachine = require("lib.statemachine")
-local Anims = require("src.Anims")
+local Anims = require("src.Table.Anims")
 local ObjectManager = require("lib.ObjectManager")
 local Tutorial = require("src.Sequence.Tutorial")
 local Character = require("src.Object.character")
