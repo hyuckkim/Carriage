@@ -73,9 +73,9 @@ function Update(dt)
 
     if not DataStore.get('canvasMap') and map then
         local newCanvasMap = CanvasMap
-            .new(map, 'Buyana', 800, 600, 4.0)
+            .new(map, '대음', 800, 600, 4.0)
         DataStore.update('canvasMap', newCanvasMap)
-        DataStore.update('currentTown', newCanvasMap:getNameTown('Buyana'))
+        DataStore.update('currentTown', newCanvasMap:getNameTown('대음'))
     end
 end
 

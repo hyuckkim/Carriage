@@ -165,7 +165,7 @@ function Tutorial:Finish()
         -- 손님 데이터 준비
         local customerData = {
             name = "박덕배",
-            destination = "Oksun",
+            destination = "서성",
             budget = 150,
             traits = { "애주가", "쾌활함" }
         }

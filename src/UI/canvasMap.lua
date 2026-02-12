@@ -158,8 +158,13 @@ function CanvasMap.new(mapData, centerTownName, width, height, zoom)
     local self = setmetatable({}, CanvasMap)
 
     local loader, canvas, viewX, viewY = self:LoadInc(mapData, centerTownName, width, height, zoom)
+    if loader then
+        printOnce('canvas initialized!')
+    else
+        printOnce('canvas initialized failed!')
+        return nil
+    end
 
-    print('canvas initialized!')
     self.canvas = canvas
     self.data = mapData
     self.selectedBurg = nil
@@ -177,6 +182,7 @@ end
 
 
 function CanvasMap:Draw(x, y, w, h, sx, sy, sw, sh)
+    if not self.canvas then return end
     -- 1. 먼저 구워진 캔버스를 그립니다.
     g.color(40, 70, 130)
     g.rect(x, y, w, h)

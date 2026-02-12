@@ -172,7 +172,7 @@ function Update(dt)
         map.data = map.task:getResult()
         
         -- 로드가 끝나면 바로 "London" 지도를 굽습니다.
-        townMiniMap = BakeComprehensiveMap(map.data, "Buyana", 300, 300, 4.0)
+        townMiniMap = BakeComprehensiveMap(map.data, "상호", 300, 300, 4.0)
         print("미니 맵 생성 완료: " .. type(townMiniMap))
     end
 end
