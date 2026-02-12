@@ -62,6 +62,7 @@ function res.image(path) end
 function res.font(name, size) end
 function res.fontFile(path, name, size) end
 function res.json(path) end
+function res.random(seed) end
 
 ---@return Task
 function res.jsonAsync(path) end
@@ -91,3 +92,5 @@ function sys.setTopmost(bool) end
 ---@return {x: number, y: number, w: number, h: number, workX: number, workY: number, workW: number, workH: number}[]
 function sys.getMonitors() end
 function sys.quit() end
+
+function printOnce(...) end

@@ -44,20 +44,37 @@ local function init()
 end
 
 -- 4. 내부 가중치 선택 함수
-local function getWeightedKey()
+local function getWeightedKey(rng)
     local total = 0
-    for _, w in pairs(weights) do total = total + w end
-    local rand = math.random(1, total)
+    local sortedKeys = {}
+    
+    -- 1. 키 추출 및 정렬 (결정론적 결과를 위해 필수)
+    for k in pairs(weights) do table.insert(sortedKeys, k) end
+    table.sort(sortedKeys) 
+
+    for _, k in ipairs(sortedKeys) do total = total + weights[k] end
+    
+    -- 2. RNG 호출 방식 분기
+    local rand
+    if type(rng) == "table" or type(rng) == "userdata" then
+        -- C++ RNG 객체인 경우 (rng:range 메서드 사용)
+        rand = rng:range(1, total)
+    else
+        -- 일반 함수(math.random 등)인 경우
+        rand = rng(1, total)
+    end
+    
     local current = 0
-    for key, w in pairs(weights) do
-        current = current + w
+    -- 3. 누적 가중치 계산
+    for _, key in ipairs(sortedKeys) do
+        current = current + weights[key]
         if rand <= current then return key end
     end
 end
 
--- 외부로 노출할 함수 반환
-return function()
+-- 정해진 확률에 따라 무작위 식물을 생성합니다.
+return function(rng)
     init() -- 최초 1회 로드 보장
-    local key = getWeightedKey()
+    local key = getWeightedKey(rng)
     return sprites[key], key
 end
