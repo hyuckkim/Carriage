@@ -1,5 +1,6 @@
 require('src.globals')
 
+local debugger = { x = 0, y = 0, visible = false }
 WindowTitle = "wagon"
 local ObjectManager = require("lib.ObjectManager")
 local UIManager = require("lib.UIManager")
@@ -7,7 +8,6 @@ local DataStore = require("src.Datastore")
 local mainStateMachine = require("src.mainStateMachine")
 local CanvasMap = require("src.UI.canvasMap")
 local Character = require("src.Object.character")
-local CharacterFactory = require("src.CharacterFactory")
 local SettingMethod = require("src.SettingMethod")
 local genGrass = require("src.GenGrass")
 
@@ -90,8 +90,6 @@ local function initGrass()
     grassCoroutine = genGrass.SpawnTownScenery(townData, startX, range)
 end
 
-local debugger
-
 function Init()
     initWindow()
     initWagon()
@@ -108,11 +106,6 @@ function Init()
     DataStore.registerTask('map', res.jsonAsync('map.json'))
 
     SettingMethod.ApplyAll()
-    debugger = CharacterFactory.createCustomer({
-        x = 0, y = 0
-    })
-    debugger.layer = -14
-    ObjectManager:Register(debugger)
 end
 
 function Update(dt)
@@ -148,7 +141,20 @@ function Draw()
         
         DataStore.get('fsm'):draw()
     g.pop()
-
+    if debugger.visible then
+        g.push()
+            local size = DataStore.get('settings').mainSize
+            g.scale(size, size, 0, sh)
+            
+            -- 빨간색 점과 좌표 텍스트
+            g.color(255, 0, 0)
+            g.circle(debugger.x, debugger.y, 3)
+            g.text(0, 
+                string.format("(%.0f, %.0f)", debugger.x, debugger.y), debugger.x + 5, debugger.y)
+            g.color(255, 255, 255)
+        g.pop()
+    end
+    
     -- 2. UI 렌더링 (설정창, 버튼 등)
     g.push()
         -- UI 전체 투명도 적용
@@ -191,7 +197,7 @@ function OnMouseUp(x, y)
 
         debugger.x = worldX
         debugger.y = worldY
-        debugger.anim.flipX = not debugger.anim.flipX
+        debugger.visible = true
         print(worldX .. '/' .. wagonY - worldY)
     end
 end

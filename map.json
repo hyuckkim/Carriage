@@ -11,7 +11,7 @@
   },
   "settings": {
     "distanceUnit": "km",
-    "distanceScale": 2,
+    "distanceScale": 0.4,
     "areaUnit": "square",
     "heightUnit": "m",
     "heightExponent": "2",

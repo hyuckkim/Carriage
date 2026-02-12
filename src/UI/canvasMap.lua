@@ -473,8 +473,8 @@ function CanvasMap:getRealDistance(startWx, startWy, endWx, endWy)
     -- 2. Azgaar 맵 데이터의 스케일 적용
     -- 보통 mapData.grid.distanceScale은 100 좌표당 실제 거리 비율을 담고 있습니다.
     -- (데이터 구조에 따라 바로 곱하거나 나누는 보정이 필요할 수 있습니다)
-    local scale = self.data.grid.distanceScale or 1
-    local unit = self.data.grid.distanceUnit or "km"
+    local scale = self.data.settings.distanceScale or 1
+    local unit = self.data.settings.distanceUnit or "km"
 
     -- 3. 실제 거리로 변환 (좌표 단위를 실제 단위로 치환)
     local realDistance = coordinateDistance * scale
@@ -492,4 +492,78 @@ function CanvasMap:getDistanceBetweenTowns(name1, name2)
     return self:getRealDistance(b1.x, b1.y, b2.x, b2.y)
 end
 
+function CanvasMap:pickDestination(startTownName)
+    local pack = self.data.pack
+    local startBurg = getCenterBurg(pack.burgs, startTownName)
+    if not startBurg then return nil end
+
+    -- 1. 시작 셀 찾기
+    local startNode = self:getBurgCell(startBurg)
+    local queue = {startNode}
+    local visited = { [startNode] = true }
+    local gScore = { [startNode] = 0 }
+    local head = 1
+    
+    local searchLimit = 100 
+    local chance = 0.6
+    local lastValidCandidates = nil 
+
+    while head <= #queue do
+        local currentLevelNodes = {}
+        local currentStep = gScore[queue[head]]
+        if not currentStep then break end
+
+        -- 현재 계층 노드 수집
+        while head <= #queue and gScore[queue[head]] == currentStep do
+            table.insert(currentLevelNodes, queue[head])
+            head = head + 1
+        end
+
+        local candidatesInLevel = {}
+        for _, nodeIdx in ipairs(currentLevelNodes) do
+            -- [보정] cells index 0 기준 -> Lua 1 기준
+            local cell = pack.cells[nodeIdx + 1]
+            if cell and cell.routes then
+                for neighborIdxStr, _ in pairs(cell.routes) do
+                    local neighbor = tonumber(neighborIdxStr)
+                    
+                    if neighbor and not visited[neighbor] then
+                        visited[neighbor] = true
+                        gScore[neighbor] = currentStep + 1
+                        table.insert(queue, neighbor)
+                        
+                        -- [보정] neighbor index 0 기준 -> Lua 1 기준
+                        local nCell = pack.cells[neighbor + 1]
+                        
+                        -- Azgaar에서 burg가 0이면 마을 없음, >0 이면 마을 존재
+                        if nCell and nCell.burg and nCell.burg > 0 then
+                            -- [보정] burg index 0 기준 -> Lua 1 기준
+                            local b = pack.burgs[nCell.burg + 1] 
+                            if b and b.name and b.name ~= startTownName then
+                                table.insert(candidatesInLevel, b)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+        -- 이번 계층에서 마을을 찾았다면 60% 확률 주사위
+        if #candidatesInLevel > 0 then
+            lastValidCandidates = candidatesInLevel
+            if math.random() < chance then
+                return candidatesInLevel[math.random(#candidatesInLevel)], currentStep + 1
+            end
+        end
+
+        if currentStep >= searchLimit then break end
+    end
+
+    -- 끝까지 안 나오면 가장 가까웠던 놈이라도 반환
+    if lastValidCandidates then
+        return lastValidCandidates[math.random(#lastValidCandidates)], "fallback"
+    end
+
+    return nil, "NO_TOWN_IN_RANGE"
+end
 return CanvasMap

@@ -46,10 +46,10 @@ local function walkWithStation()
     local screenW, _ = sys.getSize()
     local remainingDist = endto - workthrough
     local finalWagonX = remainingDist
+    local destTown = DataStore.get('currentTown')
 
     -- 마을이 화면 오른쪽 끝에 걸치기 시작할 때
     if not townCoroutine and finalWagonX <= screenW + 500 then 
-        local destTown = DataStore.get('currentTown')
         if not destTown then return end
         townCoroutine = genGrass.SpawnTownScenery(destTown, finalWagonX, screenW)
     end
@@ -64,7 +64,7 @@ local function walkWithStation()
                 x = spawnX,
                 y = wagon.y,
                 isBoarding = false
-            })
+            },  destTown)
         end
     end
 end

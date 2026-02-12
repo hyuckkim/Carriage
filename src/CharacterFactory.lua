@@ -2,6 +2,7 @@ local CharacterFactory = {}
 local Anim = require('lib.anim')
 local ObjectManager = require("lib.ObjectManager")
 local Customer = require('src.Object.customer')
+local Datastore = require("src.Datastore")
 
 local SkinAssets = {
     base_path = "assets/generate/",
@@ -177,8 +178,52 @@ local function pickSkinInfo(gender, categoryName)
     return nil
 end
 
-function CharacterFactory.createCustomer(pos, gender, key)
-    gender = gender or (math.random() > 0.5 and "male" or "female")
+local function calculateBudget(origin, target, traits)
+    local map = Datastore.get('canvasMap')
+    if not map or not origin or not target then return math.random(30, 60) end
+
+    -- 1. 거리 계산
+    local dist, _ = map:getRealDistance(origin.x, origin.y, target.x, target.y)
+    
+    -- [요금 설계] 2.8km에 150G를 맞추기 위한 로직
+    local baseFare = 30   -- 기본 요금 (시내 단거리 기본 단가)
+    local perKm = 20      -- km당 요금 (거리가 멀수록 수익 체감)
+    local distanceFare = dist * perKm
+
+    -- 2. 특성(Traits)에 따른 심리적 예산 변동
+    local multiplier = 1.0
+    for _, traitName in ipairs(traits) do
+        if traitName == "부자" then 
+            multiplier = multiplier + 0.4    -- 팁을 후하게 줄 준비가 됨
+        elseif traitName == "구두쇠" then 
+            multiplier = multiplier - 0.2    -- 깎으려고 시도함 (예산 한도 낮음)
+        elseif traitName == "짐꾼" then 
+            multiplier = multiplier + 0.15   -- 수하물 추가 요금 인지
+        elseif traitName == "여행객" then
+            multiplier = multiplier + 0.1    -- 초행길이라 시세를 잘 모름(후함)
+        elseif traitName == "학자" then
+            multiplier = multiplier - 0.1    -- 정확한 거리를 계산해서 딱 맞춰 주려 함
+        end
+    end
+
+    -- 3. 최종 요금 산출
+    -- 거리가 너무 짧아도(예: 0.5km) 기본료 덕분에 손해는 안 봄
+    local rawBudget = (baseFare + distanceFare) * multiplier
+    
+    -- ±15%의 개인차 (협상의 여지)
+    local noise = math.random(85, 115) / 100 
+    local finalBudget = rawBudget * noise
+
+    -- [게임적 허용] 10G 단위로 깔끔하게 절삭
+    -- 143G -> 140G, 158G -> 160G
+    return math.max(30, math.floor(finalBudget + 5))
+end
+
+function CharacterFactory.createCustomer(pos, currentTown, key)
+    local current = currentTown or Datastore.get('currentTown')
+    local targetTown = Datastore.get('canvasMap'):pickDestination(current.name)
+    
+    local gender = (math.random() > 0.5 and "male" or "female")
     local categories = {"skin", "top", "bottom", "hair", "footage", "hat"}
     local layerIds = {}
     local visualRecipe = { gender = gender, parts = {} }
@@ -202,7 +247,6 @@ function CharacterFactory.createCustomer(pos, gender, key)
 
     local firstNames = {"김", "이", "박", "최", "정", "강", "조", "윤"}
     local lastNames = {"철수", "영희", "춘자", "덕배", "광식", "지혜", "칠득", "소희"}
-    local destinations = {"안산", "한양", "강릉", "부산", "평양", "수원", "강화"}
     
     local allTraits = {
         { name = "애주가", type = "Positive" }, { name = "부자", type = "Positive" },
@@ -216,12 +260,15 @@ function CharacterFactory.createCustomer(pos, gender, key)
     local t1 = math.random(#allTraits)
     local t2 = math.random(#allTraits)
     while t1 == t2 do t2 = math.random(#allTraits) end
+    local selectedTraits = { allTraits[t1].name, allTraits[t2].name }
 
     local customerData = {
         name = firstNames[math.random(#firstNames)] .. lastNames[math.random(#lastNames)],
-        destination = destinations[math.random(#destinations)],
-        budget = math.random(2, 15) * 10,
-        traits = { allTraits[t1].name, allTraits[t2].name },
+        origin = current and current.name or "알 수 없는 곳",
+        destination = targetTown and targetTown.name or "먼 곳",
+        -- 거리에 비례한 예산 책정 (예: 1km당 5G)
+        budget = calculateBudget(current, targetTown, selectedTraits),
+        traits = selectedTraits,
         recipe = visualRecipe,
     }
 
