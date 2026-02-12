@@ -4,8 +4,11 @@ local ObjectManager = {
     scrollX = 0, scrollY = 0,
     isDirty = false
 }
-
+ObjectManager.nextId = 1
 function ObjectManager:Register(obj)
+    obj.regId = self.nextId  -- 등록된 순서를 나타내는 고유 ID
+    self.nextId = self.nextId + 1
+
     self.objects[obj.key] = obj
     table.insert(self.renderQueue, obj)
     self:SortLayers()
@@ -90,14 +93,21 @@ function ObjectManager:Draw()
 end
 
 function ObjectManager:SortLayers()
-    table.sort(self.renderQueue, function(a, b) return a.layer < b.layer end)self.isDirty = false
+    table.sort(self.renderQueue, function(a, b)
+        if a.layer ~= b.layer then
+            return a.layer < b.layer
+        end
+        -- 레이어가 같으면 등록된 순서(regId)대로 정렬
+        return a.regId < b.regId
+    end)
+    self.isDirty = false
 end
 
 function ObjectManager:Get(key) return self.objects[key] end
 
 function ObjectManager:GetAll(filter)
     local list = {}
-    for _, obj in pairs(self.objects) do
+    for _, obj in ipairs(self.renderQueue) do
         if type(filter) == "function" then
             if filter(obj) then table.insert(list, obj) end
         else
