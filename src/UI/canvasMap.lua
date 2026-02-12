@@ -462,4 +462,34 @@ function CanvasMap:findRoadPathWithLimit(startTownName, endTownName, limit)
     return nil, "PATH_NOT_FOUND_OR_TOO_FAR"
 end
 
+function CanvasMap:getRealDistance(startWx, startWy, endWx, endWy)
+    if not self.data or not self.data.grid then return 0, "No Grid Data" end
+
+    -- 1. 두 좌표 간의 유클리드 거리(좌표 단위) 계산
+    local dx = endWx - startWx
+    local dy = endWy - startWy
+    local coordinateDistance = math.sqrt(dx * dx + dy * dy)
+
+    -- 2. Azgaar 맵 데이터의 스케일 적용
+    -- 보통 mapData.grid.distanceScale은 100 좌표당 실제 거리 비율을 담고 있습니다.
+    -- (데이터 구조에 따라 바로 곱하거나 나누는 보정이 필요할 수 있습니다)
+    local scale = self.data.grid.distanceScale or 1
+    local unit = self.data.grid.distanceUnit or "km"
+
+    -- 3. 실제 거리로 변환 (좌표 단위를 실제 단위로 치환)
+    local realDistance = coordinateDistance * scale
+
+    return realDistance, unit
+end
+
+-- 두 마을 사이의 실제 거리를 이름으로 구하는 편의 함수
+function CanvasMap:getDistanceBetweenTowns(name1, name2)
+    local b1 = self:getNameTown(name1)
+    local b2 = self:getNameTown(name2)
+    
+    if not b1 or not b2 then return nil, "TOWN_NOT_FOUND" end
+    
+    return self:getRealDistance(b1.x, b1.y, b2.x, b2.y)
+end
+
 return CanvasMap

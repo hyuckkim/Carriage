@@ -6,7 +6,11 @@ local genGrass = require("src.GenGrass")
 
 local workthrough = 0
 local endto = 5000
-local speed = 300
+local speed = 56       -- 목표 최대 속도
+local currentSpeed = 0  -- 현재 속도 (0에서 시작)
+local acceleration = 50 -- 초당 증가할 속도 값 (조절 가능)
+local deceleration = 80 -- 감속도 (가속보다 조금 더 높으면 안정적임)
+local decelDist = 700    -- 목적지로부터 몇 픽셀 전부터 감속할지
 
 local distBuffer = 0 
 local nextSpawnDist = 0
@@ -17,7 +21,7 @@ local townCoroutine = nil
 local customersSpawned = false
 local isEnteringTown = false
 
-local function walkWithGrass(dt)
+local function walkWithGrass(dt, speed)
     if townCoroutine and coroutine.status(townCoroutine) ~= "dead" then
         local success, err = coroutine.resume(townCoroutine)
         if not success then print("Coroutine Error:", err) end
@@ -73,6 +77,7 @@ function WalkState.onEnter()
     
     workthrough = 0
     distBuffer = 0
+    currentSpeed = 0
     customersSpawned = false
     isEnteringTown = false
     townCoroutine = nil
@@ -94,19 +99,44 @@ function WalkState.onEnter()
     DataStore.update('previousTown', oldBurg)
     DataStore.update('currentTown', newBurg)
     DataStore.update('canvasMap', CanvasMap.new(DataStore.get('map'), newBurg.name, 800, 600, 4.0))
+    ObjectManager:Remove('chara')
 end
 
 function WalkState.onUpdate(dt)
-    local moveAmount = dt * 0.001 * speed
+    local remainingDist = endto - workthrough
+    
+    -- 가속/감속 계산을 위한 계수 (dt가 밀리초이므로 1000으로 나눔)
+    -- 가속도 단위를 '픽셀/s^2'로 맞추기 위해 한 번 더 1000으로 나눈 효과를 줍니다.
+    local step = dt * 0.001 
+
+    -- 1. 속도 제어
+    if remainingDist <= 0 then
+        currentSpeed = 0
+        DataStore.get('fsm'):transition('idle')
+        return
+    elseif remainingDist < decelDist then
+        -- [감속]
+        currentSpeed = currentSpeed - (deceleration * step)
+        if currentSpeed < 30 then currentSpeed = 30 end -- 최소 속도
+    elseif currentSpeed < speed then
+        -- [가속]
+        currentSpeed = currentSpeed + (acceleration * step)
+        if currentSpeed > speed then currentSpeed = speed end
+    end
+
+    -- 2. 실제 이동량 계산
+    -- moveAmount = (픽셀/초) * (초) = 픽셀
+    local moveAmount = currentSpeed * step
     workthrough = workthrough + moveAmount
     ObjectManager:MoveWorld(moveAmount, 0)
 
+    -- 3. 도착 체크
     if workthrough >= endto then
         DataStore.get('fsm'):transition('idle')
     end
 
     -- 배경 생성 및 역 도착 체크
-    walkWithGrass(dt)
+    walkWithGrass(dt, currentSpeed)
     walkWithStation()
     
     -- 화면 밖 오브젝트 제거
