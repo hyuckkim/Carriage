@@ -135,16 +135,32 @@ function Update(dt)
 end
 
 function Draw()
+    local settings = DataStore.get('settings')
+    local uiAlpha = settings.uiAlpha or 1.0
+
+    -- 1. 게임 월드 렌더링 (배경, 캐릭터, 마차 등)
     g.push()
-        local size = DataStore.get('settings').mainSize
+        local size = settings.mainSize
         g.scale(size, size, 0, sh)
+        
+        -- ObjectManager 내부에서 layer < -20인 객체들만 bgAlpha를 적용함
         ObjectManager:Draw()
+        
         DataStore.get('fsm'):draw()
     g.pop()
+
+    -- 2. UI 렌더링 (설정창, 버튼 등)
     g.push()
-        size = DataStore.get('settings').uiSize
-        g.scale(size, size, 0, sh)
+        -- UI 전체 투명도 적용
+        g.globalAlpha(uiAlpha) 
+        
+        local uiSize = settings.uiSize
+        g.scale(uiSize, uiSize, 0, sh)
+        
         UIManager:draw()
+        
+        -- 다른 곳에 영향을 주지 않도록 다시 1.0으로 복구 (pop이 해주겠지만 명시적 관리)
+        g.globalAlpha(1.0)
     g.pop()
 end
 function OnKeyDown(key)

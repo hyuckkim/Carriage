@@ -50,11 +50,37 @@ function ObjectManager:Draw()
     if self.isDirty then
         self:SortLayers()
     end
+
+    local settings = require("src.Datastore").get('settings')
+    local bgAlpha = settings.bgAlpha or 1.0
+    local isApplyingBgAlpha = false
+
+    -- 1. 객체 그리기 루프
     for _, obj in ipairs(self.renderQueue) do
+        -- 레이어가 -20보다 낮으면 배경으로 간주
+        if obj.layer < -20 then
+            if not isApplyingBgAlpha then
+                g.globalAlpha(bgAlpha) -- 배경 알파 적용
+                isApplyingBgAlpha = true
+            end
+        else
+            -- 배경 레이어를 벗어나는 순간 알파 복구
+            if isApplyingBgAlpha then
+                g.globalAlpha(1.0)
+                isApplyingBgAlpha = false
+            end
+        end
+
         obj:draw(self.scrollX, self.scrollY)
     end
+
+    -- 루프가 끝났는데 여전히 배경 알파 상태라면 안전하게 복구
+    if isApplyingBgAlpha then
+        Draw.globalAlpha(1.0)
+    end
+
+    -- 2. UI 그리기 루프 (UI는 배경 알파의 영향을 받지 않도록 별도 처리)
     for _, obj in ipairs(self.renderQueue) do
-        -- Character 클래스처럼 drawUI 함수를 가진 객체만 호출
         if obj.drawUI then
             local sx = obj.isAbsolute and 0 or self.scrollX
             local sy = obj.isAbsolute and 0 or self.scrollY

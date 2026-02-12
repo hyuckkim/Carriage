@@ -10,6 +10,7 @@ function g.polyline(polygonXYXY) end
 
 function g.color(r, g, b, a) end
 function g.lineWidth(s) end
+function g.globalAlpha(f) end
 
 ---@reutrn number w
 ---@return number h

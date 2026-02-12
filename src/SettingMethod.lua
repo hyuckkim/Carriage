@@ -4,6 +4,14 @@ local SettingMethod = {}
 local Datastore = require("src.Datastore")
 local UIManager = require("lib.UIManager")
 
+function SettingMethod.ApplyUIAlpha(v)
+    Datastore.get('settings').uiAlpha = v
+end
+
+-- [추가] 배경 투명도 적용
+function SettingMethod.ApplyBackgroundAlpha(v)
+    Datastore.get('settings').bgAlpha = v
+end
 function SettingMethod.ApplyGameSize(v)
     Datastore.get('settings').mainSize = v
 end
@@ -42,6 +50,8 @@ function SettingMethod.ApplyAll()
     SettingMethod.ApplyAlwayTop(settings.topmost)
     SettingMethod.ApplyMonitorIdx(settings.monitor)
     SettingMethod.ApplyStoredPositions(settings.uiPosition)
+    SettingMethod.ApplyUIAlpha(settings.uiAlpha or 1.0)
+    SettingMethod.ApplyBackgroundAlpha(settings.bgAlpha or 1.0)
 end
 
 
@@ -75,6 +85,8 @@ function SettingMethod.GetFilled(data)
             uiSize = 1.0,
             topmost = true,
             monitor = 1,
+            uiAlpha = 1.0,    -- 기본 UI 투명도 (불투명)
+            bgAlpha = 1.0,    -- 기본 배경 투명도 (불투명)
             uiPosition = {},
         },
     data)
