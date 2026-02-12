@@ -1,5 +1,7 @@
 local ObjectManager = require("lib.ObjectManager")
 local getPlant = require("src.Object.Grass")
+local HouseGen = require("src.Object.House")
+
 local grassCounter = 0
 
 local function GenGrass (initPos, rng)
@@ -32,23 +34,49 @@ local function GenGrass (initPos, rng)
     })
 end
 
-local function SpawnTownSceneryCoroutine(townName, leftX, range)
+local function SpawnTownSceneryCoroutine(townData, leftX, range)
     return coroutine.create(function()
+        local wagon = ObjectManager:Get('wagon')
+        if not wagon then coroutine.yield() end
+
+        -- 1. 결정론적 시드 설정
         local s = 0
-        for i = 1, #townName do s = (s * 31) + townName:byte(i) end
+        for i = 1, #townData.name do s = (s * 31) + townData.name:byte(i) end
         local rng = res.random(s)
 
         local currentX = leftX
         local endX = leftX + range
+        local midX = leftX + 300
+        local hasSpawnedHouse = false
 
         while currentX < endX do
-            -- 1. 하나 생성
-            GenGrass(currentX, rng)
+            if not hasSpawnedHouse and currentX >= midX then
+                -- 건물 생성
+                local sprite, groupName = HouseGen(townData.group, rng)
+                
+                if sprite then
+                    ObjectManager:Register({
+                        sprite = sprite,
+                        key = "town_building_" .. townData.name .. "_" .. math.random(1000, 9999),
+                        x = currentX,
+                        y = wagon.y,
+                        layer = -35, 
+                        type = "BUILDING",
+                        name = groupName,
+                        draw = function(self) 
+                            self.sprite:draw(self.x, self.y) 
+                        end,
+                        update = function(self, dt) end
+                    })
+                end
+                
+                hasSpawnedHouse = true
+                currentX = currentX + 200 
+            else
+                GenGrass(currentX, rng)
+                currentX = currentX + rng:range(40, 120)
+            end
             
-            -- 2. 다음 위치 계산
-            currentX = currentX + rng:range(40, 120)
-            
-            -- 3. 이 지점에서 실행을 멈추고 다음 프레임으로 넘김
             coroutine.yield() 
         end
     end)

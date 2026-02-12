@@ -51,7 +51,7 @@ local function walkWithStation()
     if not townCoroutine and finalWagonX <= screenW + 500 then 
         local destTown = DataStore.get('currentTown')
         if not destTown then return end
-        townCoroutine = genGrass.SpawnTownScenery(destTown.name, finalWagonX, screenW)
+        townCoroutine = genGrass.SpawnTownScenery(destTown, finalWagonX, screenW)
     end
 
     if finalWagonX <= screenW then

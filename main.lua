@@ -15,6 +15,40 @@ local sw, sh -- 창 위치
 local wagonX, wagonY -- 마차 위치
 local grassCoroutine = nil
 
+local StartTownData = {
+    cell = 1742,
+    x = 688.67,
+    y = 505.32,
+    i = 245,
+    state = 15,
+    culture = 4,
+    name = "대음",
+    feature = 2,
+    capital = 0,
+    population = 1.931,
+    type = "Generic",
+    group = "village",
+    
+    citadel = 0,
+    plaza = 0,
+    walls = 0,
+    shanty = 0,
+    temple = 0,
+
+    coa = {
+        t1 = "sable",
+        shield = "round",
+        charges = {
+            {
+                charge = "lionHeadErased",
+                t = "or",
+                p = "e",
+                size = 1.5
+            }
+        }
+    },
+}
+
 local function initWindow()
     sw, sh = sys.getWorkArea()
     sys.setSize(sw, sh)
@@ -46,14 +80,14 @@ local function initGrass()
     local town = DataStore.get('currentTown')
     
     -- 혹시라도 마을 데이터가 아직 로드되지 않았을 경우를 대비해 기본값 설정
-    local townName = town and town.name or "대음"
+    local townData = town and town or StartTownData
     
     -- 2. 화면 사이즈 확인
     local screenW, _ = sys.getSize()
     local startX = 0
     local range = screenW
     
-    grassCoroutine = genGrass.SpawnTownScenery(townName, startX, range)
+    grassCoroutine = genGrass.SpawnTownScenery(townData, startX, range)
 end
 
 local debugger
@@ -94,9 +128,9 @@ function Update(dt)
 
     if not DataStore.get('canvasMap') and map then
         local newCanvasMap = CanvasMap
-            .new(map, '대음', 800, 600, 4.0)
+            .new(map, StartTownData.name, 800, 600, 4.0)
         DataStore.update('canvasMap', newCanvasMap)
-        DataStore.update('currentTown', newCanvasMap:getNameTown('대음'))
+        DataStore.update('currentTown', newCanvasMap:getNameTown(StartTownData.name))
     end
 end
 
