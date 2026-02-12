@@ -130,6 +130,9 @@ function OnRightMouseUp(x, y)
     local clicked = UIManager:dispatchClick(x, y, "right")
 end
 
+function OnInactive()
+    UIManager:closeAll()
+end
 function CheckHit(x, y)
     if not (DataStore and UIManager and ObjectManager and sh) then return true end
 
