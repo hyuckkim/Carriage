@@ -24,6 +24,7 @@ function Character.new(key, anim)
     self.pattern_script = nil
     self.pattern_index = 0
     self.timer = 0
+    self.isAbsolute = false
     return self
 end
 Character.bubbleOffsets = {
