@@ -21,10 +21,14 @@ return function ()
     end
     panel.currentIdx = 1
 
+    panel.countText = UIFactory.createText(20, 310, "현재 손님: 0 / 4", "Small")
+    panel:addChild(panel.countText)
+
     panel.onSetScroll = function (self, idx)
         self.currentIdx = idx
         local customers = ObjectManager:GetAll('is_customer')
         local boardingCount = #ObjectManager:GetAll('isBoarding')
+        self.countText:setText(string.format("현재 손님: %d / 4", boardingCount))
 
         for i = 1, 4 do
             local customer = customers[idx + i - 1]
@@ -32,7 +36,7 @@ return function ()
             ctx.children = {}
 
             if customer then
-                -- 데이터는 이제 customer.data 안에 있습니다.
+
                 local d = customer.data 
 
                 ctx:addChild(UIViewport.new(20, 0, 64, 64, function (x, y, w, h)
@@ -52,31 +56,20 @@ return function ()
                 if d.traits and d.traits[2] then
                     ctx:addChild(UIFactory.createText(160, 44, d.traits[2], traitStyles.Positive))
                 end
-
-                -- 승차/환불 버튼
-                local isFull = boardingCount >= 4 -- 4명 이상인지 체크
-                local btnText = ""
-                local btnAction = nil
-
-                if customer.isBoarding then
-                    btnText = "환불"
-                    btnAction = function()
-                        customer.isBoarding = false
-                        self:onSetScroll(idx)
-                    end
-                else
-                    btnText = "승차"
-                    if isFull then
-                        btnAction = function() 
-                        end
-                    else
-                        btnText = "승차"
-                        btnAction = function()
-                            customer.isBoarding = true
-                            self:onSetScroll(idx)
-                        end
-                    end
+                local isFull = boardingCount >= 4
+                local btnText = customer.isBoarding and "환불" or "승차"
+                
+                local btnAction = function()
+                    customer.isBoarding = not customer.isBoarding
+                    -- 상태가 바뀌었으므로 다시 onSetScroll을 호출해 텍스트와 버튼 상태를 갱신
+                    self:onSetScroll(idx)
                 end
+
+                -- 만원이면 승차 버튼 비활성화 (환불은 가능해야 함)
+                if not customer.isBoarding and isFull then
+                    btnAction = function() end -- 아무것도 안 함
+                end
+
                 local btnStyle = (not customer.isBoarding and isFull) and "Gray" or "Default"
                 ctx:addChild(UIFactory.createButton("Default", 210, 20, 80, 40, btnText, btnAction, btnStyle))
                 ctx:addChild(UIFactory.createPanel("Frame", 20, 0, 64, 64))
@@ -95,8 +88,8 @@ return function ()
         if self:at(5).setItems then
             self:at(5):setItems(Range(scrollRange))
         end
-        
-        self:onSetScroll(1)
+        local slider = self:at(5)
+        self:onSetScroll(slider.value or 1)
     end
 
     panel:addChild(UIFactory.createSlider(300, 10, 10, 280, {1, 2, 3, 4, 5}, function(v)
