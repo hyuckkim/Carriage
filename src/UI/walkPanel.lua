@@ -2,6 +2,8 @@ local UIManager = require("lib.UIManager")
 local UIFactory = require("src.Table.UiFactory")
 local DataStore = require("src.Datastore")
 local UIViewport = require("lib.UI.UIViewport")
+local Icons = require("src.Table.Icons")
+local SaveSystem = require("src.SaveSystem")
 
 return function ()
     ---@class walkPanel: DraggablePanel
@@ -33,10 +35,23 @@ return function ()
     -- [3구역: 오른쪽 - 제어 (버튼)]
     -- 가로가 넓어졌으므로 버튼을 우측에 세로로 배치하거나 하단에 배치할 수 있습니다.
     -- 여기서는 대시보드 느낌을 살려 우측 끝에 배치합니다.
-    panel:addChild(UIFactory.createButton("Default", 220, 130, 180, 45, "게임 종료", function()
+    panel:addChild(UIFactory.createButton("Default", 235, 148, 180, 45, "승객 목록", function()
+
+    end))
+
+
+    -- 1. 설정 버튼 (Icons 모듈 활용)
+    local settingBtn = Icons.createIconButton('setting', 6, 164, 32, 32, function()
+        UIManager:open('settingPanel')
+    end)
+    panel:addChild(settingBtn)
+
+    -- 2. 종료 버튼 (Icons 모듈 활용)
+    local closeBtn = Icons.createIconButton('close', 36, 164, 32, 32, function()
         SaveSystem.save()
         sys.quit()
-    end))
+    end)
+    panel:addChild(closeBtn)
 
     -- 실시간 데이터 업데이트
     panel.onUpdate = function (self)

@@ -2,6 +2,7 @@ local UIManager = require("lib.UIManager")
 local UIFactory = require("src.Table.UiFactory")
 local Datastore = require("src.Datastore")
 local UIViewport = require("lib.UI.UIViewport")
+local Icons = require("src.Table.Icons")
 local SaveSystem = require("src.SaveSystem")
 
 ---@param self DraggablePanel
@@ -63,11 +64,11 @@ return function ()
     panel:addChild(UIFactory.createButton("Default", 415, 110, 180, 50, "상점", function()
         
     end))
-    panel:addChild(UIFactory.createButton("Default", 415, 190, 180, 50, "환경설정", function()
-        UIManager:open('settingPanel')
+    panel:addChild(UIFactory.createButton("Default", 415, 160, 180, 50, "유지 관리", function()
+
     end))
-    panel:addChild(UIFactory.createButton("Default", 415, 240, 180, 50, "게임 종료", function()
-        sys.quit()
+    panel:addChild(UIFactory.createButton("Default", 415, 240, 180, 50, "통계", function()
+
     end))
 
     -- 6: 지도 뷰포트
@@ -108,6 +109,19 @@ return function ()
     local goldText = UIFactory.createText(220, 45, "0 G", "Small")
     goldText.color = { 255, 215, 0 }
     panel:addChild(goldText)
+
+        -- 1. 설정 버튼 (Icons 모듈 활용)
+    local settingBtn = Icons.createIconButton('setting', 6, 264, 32, 32, function()
+        UIManager:open('settingPanel')
+    end)
+    panel:addChild(settingBtn)
+
+    -- 2. 종료 버튼 (Icons 모듈 활용)
+    local closeBtn = Icons.createIconButton('close', 36, 264, 32, 32, function()
+        SaveSystem.save()
+        sys.quit()
+    end)
+    panel:addChild(closeBtn)
 
     panel.onInit = function (self)
         redraw(self)
