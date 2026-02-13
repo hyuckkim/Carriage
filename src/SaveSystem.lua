@@ -1,4 +1,5 @@
 local DataStore = require("src.Datastore")
+local SettingMethod = require("src.SettingMethod")
 
 local SaveSystem = {}
 
@@ -17,6 +18,7 @@ function SaveSystem.save()
     }
 
     res.saveTable("save.json", root)
+    SettingMethod.Save()
 end
 
 function SaveSystem.load()
