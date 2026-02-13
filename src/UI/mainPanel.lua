@@ -46,10 +46,10 @@ end
 
 return function ()
     ---@class mainPanel: DraggablePanel
-    local panel = UIFactory.createDraggablePanel("Default", 300, 700, 405, 300)
+    local panel = UIFactory.createDraggablePanel("Default", 300, 700, 605, 300)
 
     -- 1: 출발 버튼
-    panel:addChild(UIFactory.createButton("Default", 215, 10, 180, 50, "출발", function()
+    panel:addChild(UIFactory.createButton("Default", 415, 10, 180, 50, "출발", function()
         local map = Datastore.get('canvasMap')
         if not map or not map.selectedBurg then return end
         Datastore.get('fsm'):transition("walk")
@@ -57,16 +57,16 @@ return function ()
     end, "Gray"))
 
     -- 2~5: 기타 버튼들
-    panel:addChild(UIFactory.createButton("Default", 215, 60, 180, 50, "손님 받기", function()
+    panel:addChild(UIFactory.createButton("Default", 415, 60, 180, 50, "손님 받기", function()
         UIManager:open('customerPanel')
     end))
-    panel:addChild(UIFactory.createButton("Default", 215, 110, 180, 50, "상점", function()
+    panel:addChild(UIFactory.createButton("Default", 415, 110, 180, 50, "상점", function()
         
     end))
-    panel:addChild(UIFactory.createButton("Default", 215, 190, 180, 50, "환경설정", function()
+    panel:addChild(UIFactory.createButton("Default", 415, 190, 180, 50, "환경설정", function()
         UIManager:open('settingPanel')
     end))
-    panel:addChild(UIFactory.createButton("Default", 215, 240, 180, 50, "게임 종료", function()
+    panel:addChild(UIFactory.createButton("Default", 415, 240, 180, 50, "게임 종료", function()
         sys.quit()
     end))
 
@@ -101,13 +101,20 @@ return function ()
     panel:addChild(UIFactory.createText(10, 195, "0.0 km", "Small"))
     panel:addChild(UIFactory.createText(10, 220, "설명 정보", "Small"))
 
-    panel:addChild(UIFactory.createText(10, 250, "0 G", "Small"))
+    
+    local statusText = UIFactory.createText(220, 15, "운송 일지", "Default")
+    panel:addChild(statusText)
+
+    local goldText = UIFactory.createText(220, 45, "0 G", "Small")
+    goldText.color = { 255, 215, 0 }
+    panel:addChild(goldText)
 
     panel.onInit = function (self)
         redraw(self)
     end
     panel.onUpdate = function (self)
-        panel:at(10).text = "Gold: " .. (Datastore.get('gold') or 0)
+        local gold = Datastore.get('gold') or 0
+        goldText.text = string.format("%d Gold", math.floor(gold))
     end
     
     panel.visible = false
