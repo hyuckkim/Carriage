@@ -59,6 +59,16 @@ local function walkWithStation()
     customersSpawned = true
     isEnteringTown = true -- 이제부터 '길' 풀 생성을 중단함
     -- 손님 스폰은 '길'의 풍경과 별개여야 하므로 일반 math.random 사용
+
+        local boardingCustomers = ObjectManager:GetAll('isBoarding')
+        local currentTownName = destTown and destTown.name or ""
+
+        for _, customer in ipairs(boardingCustomers) do
+            local d = customer.data
+                local extraRate = 1.2
+                d.budget = math.floor(d.budget * extraRate)
+        end
+
         for i = 1, 6 do
             local spawnX = finalWagonX + math.random(150, 450)
             CharacterFactory.createCustomer({

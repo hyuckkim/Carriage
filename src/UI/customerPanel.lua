@@ -40,7 +40,7 @@ return function ()
                 
                 -- 명칭과 상세 정보 (customer.data 참조)
                 ctx:addChild(UIFactory.createText(100, 0, d.name))
-                ctx:addChild(UIFactory.createText(100, 26, (d.destination or "??") .. " | " .. (d.budget or 0) .. "G", "Small"))
+                ctx:addChild(UIFactory.createText(100, 26, (d.destination or "??") .. " | " .. (math.floor(d.budget) or 0) .. "G", "Small"))
                 
                 -- 특성(Traits) 표시 로직
                 -- 만약 traits가 배열 형태라면 반복문으로 처리하면 더 좋습니다.
@@ -57,10 +57,19 @@ return function ()
                 end
                 local isFull = boardingCount >= 4
                 local btnText = customer.isBoarding and "환불" or "승차"
+                local currentGold = Datastore.get('gold') or 0
                 
                 local btnAction = function()
-                    customer.isBoarding = not customer.isBoarding
-                    -- 상태가 바뀌었으므로 다시 onSetScroll을 호출해 텍스트와 버튼 상태를 갱신
+                    local budget = d.budget or 0
+                    if not customer.isBoarding then
+                        -- [승차] 현재 골드 + 손님 예산
+                        Datastore.update('gold', currentGold + budget)
+                        customer.isBoarding = true
+                    else
+                        -- [환불] 현재 골드 - 손님 예산 (0 미만 방지)
+                        Datastore.update('gold', currentGold - budget)
+                        customer.isBoarding = false
+                    end
                     self:onSetScroll(idx)
                 end
 
