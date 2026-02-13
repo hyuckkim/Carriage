@@ -60,8 +60,8 @@ return function ()
     panel:addChild(UIFactory.createButton("Default", 215, 60, 180, 50, "손님 받기", function()
         UIManager:open('customerPanel')
     end))
-    panel:addChild(UIFactory.createButton("Default", 215, 110, 180, 50, "저장하기", function()
-        SaveSystem.save()
+    panel:addChild(UIFactory.createButton("Default", 215, 110, 180, 50, "상점", function()
+        
     end))
     panel:addChild(UIFactory.createButton("Default", 215, 190, 180, 50, "환경설정", function()
         UIManager:open('settingPanel')
@@ -101,8 +101,13 @@ return function ()
     panel:addChild(UIFactory.createText(10, 195, "0.0 km", "Small"))
     panel:addChild(UIFactory.createText(10, 220, "설명 정보", "Small"))
 
+    panel:addChild(UIFactory.createText(10, 250, "0 G", "Small"))
+
     panel.onInit = function (self)
         redraw(self)
+    end
+    panel.onUpdate = function (self)
+        panel:at(10).text = "Gold: " .. (Datastore.get('gold') or 0)
     end
     
     panel.visible = false

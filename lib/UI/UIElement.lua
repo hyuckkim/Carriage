@@ -11,6 +11,7 @@ function UIElement.new(x, y, w, h)
     self.parent = nil
     self.passthrough = false
     self.updateState = nil
+    self.onUpdate = nil
     return self
 end
 
@@ -43,6 +44,10 @@ end
 
 function UIElement:update(dt, mx, my, ml, consumed)
     if not self.visible then return consumed end
+    if self.onUpdate then
+        self:onUpdate(dt)
+    end
+
     local childConsumed = false
 
     for i = #self.children, 1, -1 do

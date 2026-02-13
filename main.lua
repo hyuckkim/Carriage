@@ -88,6 +88,9 @@ function Init()
 
     SettingMethod.ApplyAll()
     local loadedData = SaveSystem.load()
+
+    DataStore.update('gold', loadedData.gold or 0)
+    
     if not loadedData then
         local screenW, _ = sys.getSize()
         

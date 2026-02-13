@@ -13,6 +13,7 @@ function SaveSystem.save()
 
     local root = {
         state = stateSpecificData,
+        gold = DataStore.get('gold') or 0,
     }
 
     res.saveTable("save.json", root)
@@ -20,7 +21,7 @@ end
 
 function SaveSystem.load()
     local root = res.loadTable("save.json")
-    if not root then return end
+    if not root then return {} end
     
     local fsm = DataStore.get('fsm')
     if fsm then

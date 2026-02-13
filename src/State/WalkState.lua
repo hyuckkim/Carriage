@@ -143,6 +143,12 @@ function WalkState.onUpdate(dt)
     -- moveAmount = (픽셀/초) * (초) = 픽셀
     local moveAmount = currentSpeed * step
     workthrough = workthrough + moveAmount
+    DataStore.update('walkProgress', {
+        current = workthrough,
+        target = endto,
+        speed = currentSpeed
+    })
+    
     ObjectManager:MoveWorld(moveAmount, 0)
 
     -- 3. 도착 체크
