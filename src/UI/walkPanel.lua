@@ -32,11 +32,8 @@ return function ()
     local distText = UIFactory.createText(220, 95, "잔여: 0.00 km", "Small")
     panel:addChild(distText)
 
-    -- [3구역: 오른쪽 - 제어 (버튼)]
-    -- 가로가 넓어졌으므로 버튼을 우측에 세로로 배치하거나 하단에 배치할 수 있습니다.
-    -- 여기서는 대시보드 느낌을 살려 우측 끝에 배치합니다.
     panel:addChild(UIFactory.createButton("Default", 235, 148, 180, 45, "승객 목록", function()
-
+        UIManager:open('passangerPanel')
     end))
 
 
