@@ -27,11 +27,11 @@ function CanvasMap:LoadInc(mapData, centerTownName, width, height, zoom)
 if not mapData or not mapData.pack then return nil end
     local pack = mapData.pack
 
-    local centerBurg = getCenterBurg(pack.burgs, centerTownName)
-    if not centerBurg then return nil end
+    self.centerBurg = getCenterBurg(pack.burgs, centerTownName)
+    if not self.centerBurg then return nil end
     
     local canvas = g.offscreenCanvas(width, height)
-    local viewX, viewY = centerBurg.x, centerBurg.y
+    local viewX, viewY = self.centerBurg.x, self.centerBurg.y
     local halfW, halfH = (width / zoom) / 2, (height / zoom) / 2
     local function worldToScreen(wx, wy)
         return (wx - (viewX - halfW)) * zoom, (wy - (viewY - halfH)) * zoom
@@ -348,7 +348,8 @@ function CanvasMap:findRoadPath(startTownName, endTownName)
         local current = table.remove(openSet, 1)
 
         if current == endNode then
-            -- 경로 복원 및 경유지 추출
+            -- 그런 일은 있을 수가 없음! 제발!
+            print("current가 endNode와 같습니다. 어떻게?")
             return self:reconstructPath(cameFrom, current)
         end
 

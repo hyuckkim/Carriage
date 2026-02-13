@@ -80,21 +80,21 @@ end
 
 function Character:_updateDialogue(dt)
     if not self.say then return end
-    
-    local fullText = self.say.fullText
-    local len = utf8.len(fullText)
-    
+    local len = utf8.len(self.say.fullText)
     if self.say.charIndex < len then
         self.say.typeTimer = self.say.typeTimer + dt
         if self.say.typeTimer >= self.say.typeSpeed then
             self.say.typeTimer = 0
             self.say.charIndex = self.say.charIndex + 1
-            local byteOffset = utf8.offset(fullText, self.say.charIndex + 1) - 1
-            self.say.text = string.sub(fullText, 1, byteOffset)
+            
+            -- utf8.offset을 사용해 정확한 바이트 위치 계산
+            local byteOffset = utf8.offset(self.say.fullText, self.say.charIndex + 1) - 1
+            self.say.text = string.sub(self.say.fullText, 1, byteOffset)
+            
+        elseif self.say.timer then
+            self.say.timer = self.say.timer - dt
+            if self.say.timer <= 0 then self.say = nil end
         end
-    elseif self.say.timer then
-        self.say.timer = self.say.timer - dt
-        if self.say.timer <= 0 then self.say = nil end
     end
 end
 
@@ -136,7 +136,7 @@ function Character:drawUI(scrollX, scrollY)
 end
 
 function Character:_drawDialogue(drawX, drawY)
-    if not self.say then return end
+    if not self.say or not self.say.text then return end
     local style = self.say.style or 'Quote'
     local offset = self.bubbleOffsets[style] or { x = 0, y = 0 }
     local fx, fy = drawX + self.sayOX + offset.x, drawY + self.sayOY + offset.y
@@ -168,9 +168,19 @@ function Character:MoveBySpeed(targetX, targetY, speed, onFinishAnim)
 end
 
 function Character:Say(text, style, duration)
+    if not text then 
+        self.say = nil -- 텍스트가 없으면 대화창 제거
+        return 
+    end
+
     self.say = {
-        fullText = text, text = "", style = style or 'Quote',
-        timer = duration, charIndex = 0, typeTimer = 0, typeSpeed = 0.05
+        fullText = text,
+        displayBuffer = "", -- 화면에 실제로 그려질 텍스트
+        style = style or 'Quote',
+        timer = duration or 2, -- 기본 지속 시간(초) 설정
+        charIndex = 0,
+        typeTimer = 0,
+        typeSpeed = 0.05
     }
 end
 function Character:StopSay()
@@ -189,27 +199,46 @@ function Character:setPattern(patternName)
 end
 
 function Character:updatePattern(dt)
-    if self.behavior_type ~= 'pattern' or not self.pattern_script or (self.moveTime and self.moveTime > 0) then return end
-    if self.timer and self.timer > 0 then self.timer = self.timer - dt; return end
+    if self.behavior_type ~= 'pattern' or not self.pattern_script then return end
 
-    local speaker = ObjectManager:Get('chara') or ObjectManager:Get('wagon')
-    self.pattern_index = (self.pattern_index % #self.pattern_script) + 1
-    local step = self.pattern_script[self.pattern_index]
-
-    if speaker then speaker:StopSay() end
-    self:Say() -- StopSay 역할
-
-    if step.action == "say" then
-        self:Say(step.text, (self.x < 150) and 'QuoteL' or 'Quote')
-    elseif step.action == "emote" then
-        self:Emote(step.emotion)
-    elseif step.action == "walk" then
-        self.anim:play('walk')
-        self:MoveBySpeed(step.to, self.y, step.speed or 40, 'idle')
-    elseif step.action == "listen" and speaker then
-        speaker:Say(step.text, (speaker.x < 150) and 'QuoteL' or 'Quote')
+    -- 1. 타이머 진행
+    if self.timer and self.timer > 0 then
+        self.timer = self.timer - dt
     end
-    self.timer = step.duration or 0
+
+
+    -- 2. 조건 체크 (타이머 종료 및 이동 중 아님)
+    local is_moving = (self.moveTime and self.moveTime > 0)
+    if (not self.timer or self.timer <= 0) and not is_moving then
+        local speaker = ObjectManager:Get('chara') or ObjectManager:Get('wagon')
+        -- 다음 단계 계산
+        self.pattern_index = (self.pattern_index % #self.pattern_script) + 1
+        local step = self.pattern_script[self.pattern_index]
+
+        speaker:StopSay()
+        self:StopSay()
+
+        if step.action == "say" then
+            local style = (self.x < 150) and 'QuoteL' or 'Quote'
+            self:Say(step.text, style) -- 자기 자신의 Say 메서드 호출
+
+        elseif step.action == "emote" then
+            self:Emote(step.emotion)
+
+        elseif step.action == "walk" then
+            self.anim:play('walk')
+            self:MoveBySpeed(step.to, self.y, step.speed or 40, 'idle')
+
+        elseif step.action == "listen" then
+            
+            if speaker then
+                local style = (speaker.x < 150) and 'QuoteL' or 'Quote'
+                speaker:Say(step.text, style)
+            end
+        end
+
+        self.timer = step.duration or 0
+    end
 end
 
 return Character

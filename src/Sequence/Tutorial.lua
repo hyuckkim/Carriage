@@ -153,12 +153,7 @@ function Tutorial:Finish()
     local oldAdvisor = ObjectManager:Get('advisor')
     if oldAdvisor then
         -- 손님 데이터 준비
-        local customerData = {
-            name = "박덕배",
-            destination = "서성",
-            budget = 150,
-            traits = { "애주가", "쾌활함" }
-        }
+        local customerData = Defines.TutorialData
         
         local advisor = Customer.new('cust_0000_박덕배', oldAdvisor.anim, customerData)
         advisor.x, advisor.y = oldAdvisor.x, oldAdvisor.y

@@ -1,4 +1,5 @@
 require('src.globals')
+require('defines')
 
 local debugger = { x = 0, y = 0, visible = false }
 WindowTitle = "wagon"
@@ -19,39 +20,7 @@ local sw, sh -- 창 위치
 local wagonX, wagonY -- 마차 위치
 local grassCoroutine = nil
 
-local StartTownData = {
-    cell = 1742,
-    x = 688.67,
-    y = 505.32,
-    i = 245,
-    state = 15,
-    culture = 4,
-    name = "대음",
-    feature = 2,
-    capital = 0,
-    population = 1.931,
-    type = "Generic",
-    group = "village",
-    
-    citadel = 0,
-    plaza = 0,
-    walls = 0,
-    shanty = 0,
-    temple = 0,
-
-    coa = {
-        t1 = "sable",
-        shield = "round",
-        charges = {
-            {
-                charge = "lionHeadErased",
-                t = "or",
-                p = "e",
-                size = 1.5
-            }
-        }
-    },
-}
+local StartTownData = Defines.StartTownData
 
 local function initStateMachine()
     local fsm = StateMachine.new()
@@ -125,7 +94,7 @@ function Init()
         grassCoroutine = genGrass.SpawnTownScenery(
             StartTownData.name, StartTownData.group, 0, screenW)
         DataStore.update('currentTown', StartTownData)
-        DataStore.get('fsm'):transition("idle")
+        DataStore.get('fsm'):transition("prologue")
     end
 end
 
@@ -145,6 +114,9 @@ function Update(dt)
         local newCanvasMap = CanvasMap
             .new(map, DataStore.get('currentTown').name, 800, 600, 4.0)
         DataStore.update('canvasMap', newCanvasMap)
+        if newCanvasMap then
+            DataStore.update('currentTown', newCanvasMap.centerBurg:to_table())
+        end
     end
 end
 
@@ -216,9 +188,11 @@ function OnMouseUp(x, y)
         
         DataStore.get('fsm'):click(worldX, worldY)
 
-        debugger.x = worldX
-        debugger.y = worldY
-        debugger.visible = true
+        if Defines.Debug then
+            debugger.x = worldX
+            debugger.y = worldY
+            debugger.visible = true
+        end
         print(worldX .. '/' .. wagonY - worldY)
     end
 end
