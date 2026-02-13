@@ -2,6 +2,7 @@ local ObjectManager = require("lib.ObjectManager")
 local UIFactory = require("src.Table.UiFactory")
 local EmotesFactory = require("src.Table.emotes")
 local Object = require("src.Object.object")
+local Patterns = require("src.Table.Patterns")
 
 ---@class Character: Object
 local Character = setmetatable({}, { __index = Object })
@@ -32,13 +33,45 @@ Character.bubbleOffsets = {
     QuoteL = { x = -5, y = -50 }
 }
 
--- 조상의 update를 확장(Override)
+function Character:GetPersistentData()
+    -- 1. 조상(Object)의 데이터 먼저 가져오기
+    local data = getmetatable(Character).__index.GetPersistentData(self)
+    
+    -- 2. Character 특유의 데이터 얹기
+    data.type = "Character"
+    data.sayOX, data.sayOY = self.sayOX, self.sayOY
+    data.behavior_type = self.behavior_type
+    data.pattern_name = self.pattern_name
+    data.pattern_index = self.pattern_index
+    data.timer = self.timer
+    
+    return data
+end
+
+function Character.newFromData(d)
+    ---@class Character: Object
+    local self = Object.newFromData(d)
+    setmetatable(self, Character)
+    
+    -- 2. Character 상태 복구
+    self.sayOX, self.sayOY = d.sayOX, d.sayOY
+    
+    if d.pattern_name then
+        self:setPattern(d.pattern_name)
+        self.pattern_index = d.pattern_index or 0
+        self.timer = d.timer or 0
+    end
+    
+    return self
+end
+
 function Character:update(dt)
     if self.is_destroyed then return end
-    local base = getmetatable(Character).__index
-    base.update(self, dt)
+    
+    -- 조상 update 실행 (애니메이션 등)
+    getmetatable(Character).__index.update(self, dt)
 
-    -- 2. Character만의 전용 로직 (OM에서 떼어온 것들)
+    -- 전용 로직
     self:_updateDialogue(dt)
     self:_updateMovement(dt)
     self:_updateEmote(dt)
@@ -47,73 +80,56 @@ end
 
 function Character:_updateDialogue(dt)
     if not self.say then return end
-    local len = utf8.len(self.say.fullText)
+    
+    local fullText = self.say.fullText
+    local len = utf8.len(fullText)
+    
     if self.say.charIndex < len then
         self.say.typeTimer = self.say.typeTimer + dt
         if self.say.typeTimer >= self.say.typeSpeed then
             self.say.typeTimer = 0
             self.say.charIndex = self.say.charIndex + 1
-            
-            -- utf8.offset을 사용해 정확한 바이트 위치 계산
-            local byteOffset = utf8.offset(self.say.fullText, self.say.charIndex + 1) - 1
-            self.say.text = string.sub(self.say.fullText, 1, byteOffset)
-            
-        elseif self.say.timer then
-            self.say.timer = self.say.timer - dt
-            if self.say.timer <= 0 then self.say = nil end
+            local byteOffset = utf8.offset(fullText, self.say.charIndex + 1) - 1
+            self.say.text = string.sub(fullText, 1, byteOffset)
         end
+    elseif self.say.timer then
+        self.say.timer = self.say.timer - dt
+        if self.say.timer <= 0 then self.say = nil end
     end
 end
+
 function Character:_updateEmote(dt)
     if not self.emote then return end
     self.emote.anim:update(dt)
     
     if self.emote.timer then
         self.emote.timer = self.emote.timer - dt
-        if self.emote.timer <= 0 then 
-            self.emote = nil 
-        end
+        if self.emote.timer <= 0 then self.emote = nil end
     end
 end
 function Character:_updateMovement(dt)
-    if not self.moveTime then return end
-    if self.moveTime > 0 then
-        if self.targetX > self.x then
-            self.anim.flipX = true  -- 오른쪽을 봄 (이미지 기본이 왼쪽일 경우)
-        elseif self.targetX < self.x then
-            self.anim.flipX = false -- 왼쪽을 봄
-        end
+    if not self.moveTime or self.moveTime <= 0 then return end
 
-        -- 기존 이동 계산
-        if dt >= self.moveTime then
-            self.x, self.y = self.targetX, self.targetY
-            self.moveTime = 0
-            if self.onFinishAnim then
-                self.anim:play(self.onFinishAnim)
-                self.onFinishAnim = nil -- 한 번만 실행하고 비우기
-            end
-        else
-            self.x = self.x + (self.vx * dt)
-            self.y = self.y + (self.vy * dt)
-            self.moveTime = self.moveTime - dt
+    -- 방향 전환
+    self.anim.flipX = (self.targetX > self.x)
+
+    if dt >= self.moveTime then
+        self.x, self.y = self.targetX, self.targetY
+        self.moveTime = 0
+        if self.onFinishAnim then
+            self.anim:play(self.onFinishAnim)
+            self.onFinishAnim = nil
         end
+    else
+        self.x = self.x + (self.vx * dt)
+        self.y = self.y + (self.vy * dt)
+        self.moveTime = self.moveTime - dt
     end
-end
-
-function Character:draw(scrollX, scrollY)
-    if self.is_destroyed then return end
-    local base = getmetatable(Character).__index
-    base.draw(self, scrollX, scrollY)
-
-    local drawX = self.x - scrollX + self.ox
-    local drawY = self.y - scrollY + self.oy
 end
 
 function Character:drawUI(scrollX, scrollY)
     if self.is_destroyed then return end
-    
-    local drawX = self.x - scrollX + self.ox
-    local drawY = self.y - scrollY + self.oy
+    local drawX, drawY = self.x - scrollX + self.ox, self.y - scrollY + self.oy
     
     self:_drawDialogue(drawX, drawY)
     self:_drawEmote(drawX, drawY)
@@ -121,142 +137,79 @@ end
 
 function Character:_drawDialogue(drawX, drawY)
     if not self.say then return end
-    -- 1. 캐릭터별 기본 말풍선 위치 (머리 위)
-    local tx = drawX + self.sayOX
-    local ty = drawY + self.sayOY
-    
-    -- 2. 말풍선 종류(Style)에 따른 꼬리 위치 보정
     local style = self.say.style or 'Quote'
     local offset = self.bubbleOffsets[style] or { x = 0, y = 0 }
+    local fx, fy = drawX + self.sayOX + offset.x, drawY + self.sayOY + offset.y
     
-    local finalX = tx + offset.x
-    local finalY = ty + offset.y
-    
-    -- 3. 그리기
-    UIFactory.createPanel(style, finalX, finalY, 130, 45):draw()
-    UIFactory.createText(finalX + 5, finalY + 5, self.say.text, 'Quote'):draw()
+    UIFactory.createPanel(style, fx, fy, 130, 45):draw()
+    UIFactory.createText(fx + 5, fy + 5, self.say.text, 'Quote'):draw()
 end
 
 function Character:_drawEmote(drawX, drawY)
     if not self.emote then return end
-
-    local ex = drawX + self.sayOX - 8
-    local ey = drawY + self.sayOY - 16
-    self.emote.anim:draw(ex, ey)
+    self.emote.anim:draw(drawX + self.sayOX - 8, drawY + self.sayOY - 16)
 end
 
 function Character:Move(targetX, targetY, time, onFinishAnim)
     self.onFinishAnim = onFinishAnim
-
     if time and time > 0 then
-        self.targetX = targetX
-        self.targetY = targetY
-        self.moveTime = time
-        self.vx = (targetX - self.x) / time
-        self.vy = (targetY - self.y) / time
+        self.targetX, self.targetY, self.moveTime = targetX, targetY, time
+        self.vx, self.vy = (targetX - self.x) / time, (targetY - self.y) / time
     else
-        self.x, self.y = targetX, targetY
-        self.targetX, self.targetY = targetX, targetY
-        self.moveTime = 0
+        self.x, self.y, self.targetX, self.targetY, self.moveTime = targetX, targetY, targetX, targetY, 0
         if onFinishAnim then self.anim:play(onFinishAnim) end
     end
 end
 
 function Character:MoveBySpeed(targetX, targetY, speed, onFinishAnim)
-    -- 현재 위치와 목표 위치 사이의 거리 계산 (피타고라스)
-    local dx = targetX - self.x
-    local dy = targetY - self.y
-    local distance = math.sqrt(dx*dx + dy*dy)
-
-    -- 거리 / 속도 = 걸리는 시간
-    local travelTime = distance / speed
-
-    -- 기존 Move 함수를 재활용 (시간을 넘겨줌)
+    local dx, dy = targetX - self.x, targetY - self.y
+    local travelTime = math.sqrt(dx*dx + dy*dy) / speed
     self:Move(targetX, targetY, travelTime, onFinishAnim)
 end
 
 function Character:Say(text, style, duration)
     self.say = {
-        fullText = text,       -- 전체 문장
-        text = "",             -- 현재 보여줄 문장 (빈 값으로 시작)
-        style = style or 'Quote',
-        timer = duration,      -- 대사 유지 시간
-        
-        -- 타이핑 관련
-        charIndex = 0,         -- 현재 몇 번째 글자인지
-        typeTimer = 0,         -- 다음 글자가 나올 때까지의 시간
-        typeSpeed = 0.05       -- 글자당 속도 (낮을수록 빠름)
+        fullText = text, text = "", style = style or 'Quote',
+        timer = duration, charIndex = 0, typeTimer = 0, typeSpeed = 0.05
     }
 end
 function Character:StopSay()
     self.say = nil
 end
 function Character:Emote(emotionIndex, duration)
-    local emoNames = {
-        "question", "exclamation", "idea", "skull", "sweat",
-        "sleep", "angry", "sad", "heart_eye", "cry",
-        "smile", "neutral", "heart", "big_smile", "wink"
-    }
-    local name = emoNames[emotionIndex] or "question"
-
-    -- [핵심] .new()를 호출해 독립적인 객체 생성!
-    self.emote = {
-        anim = EmotesFactory.new(),
-        timer = duration or 1500
-    }
-    self.emote.anim:play(name)
+    local emoNames = { "question", "exclamation", "idea", "skull", "sweat", "sleep", "angry", "sad", "heart_eye", "cry", "smile", "neutral", "heart", "big_smile", "wink" }
+    self.emote = { anim = EmotesFactory.new(), timer = duration or 1500 }
+    self.emote.anim:play(emoNames[emotionIndex] or "question")
 end
 
-function Character:setPattern(pattern)
-    self.behavior_type = 'pattern'
-    self.pattern_script = pattern
-    self.pattern_index = 0
-    
-    -- 즉시 시작할지, 약간의 랜덤 대기를 가질지 결정
-    self.timer = 0
+function Character:setPattern(patternName)
+    local script = Patterns[patternName]
+    if not script then return end
+    self.behavior_type, self.pattern_name, self.pattern_script, self.pattern_index, self.timer = 'pattern', patternName, script, 0, 0
 end
 
 function Character:updatePattern(dt)
-    if self.behavior_type ~= 'pattern' or not self.pattern_script then return end
+    if self.behavior_type ~= 'pattern' or not self.pattern_script or (self.moveTime and self.moveTime > 0) then return end
+    if self.timer and self.timer > 0 then self.timer = self.timer - dt; return end
 
-    -- 1. 타이머 진행
-    if self.timer and self.timer > 0 then
-        self.timer = self.timer - dt
+    local speaker = ObjectManager:Get('chara') or ObjectManager:Get('wagon')
+    self.pattern_index = (self.pattern_index % #self.pattern_script) + 1
+    local step = self.pattern_script[self.pattern_index]
+
+    if speaker then speaker:StopSay() end
+    self:Say() -- StopSay 역할
+
+    if step.action == "say" then
+        self:Say(step.text, (self.x < 150) and 'QuoteL' or 'Quote')
+    elseif step.action == "emote" then
+        self:Emote(step.emotion)
+    elseif step.action == "walk" then
+        self.anim:play('walk')
+        self:MoveBySpeed(step.to, self.y, step.speed or 40, 'idle')
+    elseif step.action == "listen" and speaker then
+        speaker:Say(step.text, (speaker.x < 150) and 'QuoteL' or 'Quote')
     end
-
-
-    -- 2. 조건 체크 (타이머 종료 및 이동 중 아님)
-    local is_moving = (self.moveTime and self.moveTime > 0)
-    if (not self.timer or self.timer <= 0) and not is_moving then
-        local speaker = ObjectManager:Get('chara') or ObjectManager:Get('wagon')
-        -- 다음 단계 계산
-        self.pattern_index = (self.pattern_index % #self.pattern_script) + 1
-        local step = self.pattern_script[self.pattern_index]
-
-        speaker:StopSay()
-        self:StopSay()
-
-        if step.action == "say" then
-            local style = (self.x < 150) and 'QuoteL' or 'Quote'
-            self:Say(step.text, style) -- 자기 자신의 Say 메서드 호출
-
-        elseif step.action == "emote" then
-            self:Emote(step.emotion)
-
-        elseif step.action == "walk" then
-            self.anim:play('walk')
-            self:MoveBySpeed(step.to, self.y, step.speed or 40, 'idle')
-
-        elseif step.action == "listen" then
-            
-            if speaker then
-                local style = (speaker.x < 150) and 'QuoteL' or 'Quote'
-                speaker:Say(step.text, style)
-            end
-        end
-
-        self.timer = step.duration or 0
-    end
+    self.timer = step.duration or 0
 end
 
 return Character

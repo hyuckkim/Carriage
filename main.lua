@@ -2,14 +2,18 @@ require('src.globals')
 
 local debugger = { x = 0, y = 0, visible = false }
 WindowTitle = "wagon"
-local ObjectManager = require("lib.ObjectManager")
+
 local UIManager = require("lib.UIManager")
 local DataStore = require("src.Datastore")
-local mainStateMachine = require("src.mainStateMachine")
 local CanvasMap = require("src.UI.canvasMap")
-local Character = require("src.Object.character")
 local SettingMethod = require("src.SettingMethod")
 local genGrass = require("src.GenGrass")
+local SaveSystem = require("src.SaveSystem")
+local StateMachine = require("lib.statemachine")
+local Anims = require("src.Table.Anims")
+local ObjectManager = require("lib.ObjectManager")
+local Tutorial = require("src.Sequence.Tutorial")
+local Character = require("src.Object.character")
 
 local sw, sh -- 창 위치
 local wagonX, wagonY -- 마차 위치
@@ -49,6 +53,28 @@ local StartTownData = {
     },
 }
 
+local function initStateMachine()
+    local fsm = StateMachine.new()
+    fsm:addState("prologue", {
+        onEnter = function()
+            -- 주인공 생성 (Character 클래스 활용)
+            local chara = Character.new('chara', Anims.chara())
+            chara.ox, chara.oy = -32, -64
+            chara.sayOX, chara.sayOY = 32, 20
+            ObjectManager:Register(chara)
+
+            -- 튜토리얼 시작
+            Tutorial:Init(wagonX, wagonY)
+        end,
+        onUpdate = function(dt) Tutorial:Update(dt) end,
+        onDraw   = function()   Tutorial:Draw()   end,
+        onClick  = function(x, y) Tutorial:OnClick(x, y) end
+    })
+    fsm:addState("idle", require("src.State.IdleState"))
+    fsm:addState("walk", require("src.State.WalkState"))
+
+    return fsm
+end
 local function initWindow()
     sw, sh = sys.getWorkArea()
     sys.setSize(sw, sh)
@@ -76,36 +102,31 @@ local function initWagon()
     wagonTop.oy = -96
     ObjectManager:Register(wagonTop)
 end
-local function initGrass()
-    local town = DataStore.get('currentTown')
-    
-    -- 혹시라도 마을 데이터가 아직 로드되지 않았을 경우를 대비해 기본값 설정
-    local townData = town and town or StartTownData
-    
-    -- 2. 화면 사이즈 확인
-    local screenW, _ = sys.getSize()
-    local startX = 0
-    local range = screenW
-    
-    grassCoroutine = genGrass.SpawnTownScenery(townData, startX, range)
-end
 
 function Init()
     initWindow()
     initWagon()
-    initGrass()
     SettingMethod.Init("settings.json")
 
-    DataStore.update('fsm', mainStateMachine:init(wagonX, wagonY))
+    DataStore.update('fsm', initStateMachine())
 
     UIManager:add("mainPanel", require("src.UI.mainPanel")())
     UIManager:add("settingPanel", require("src.UI.settingPanel")())
     UIManager:add("customerPanel", require("src.UI.customerPanel")())
+    UIManager:add("walkPanel", require("src.UI.walkPanel")())
 
-    DataStore.get('fsm'):transition("idle")
     DataStore.registerTask('map', res.jsonAsync('map.json'))
 
     SettingMethod.ApplyAll()
+    local loadedData = SaveSystem.load()
+    if not loadedData then
+        local screenW, _ = sys.getSize()
+        
+        grassCoroutine = genGrass.SpawnTownScenery(
+            StartTownData.name, StartTownData.group, 0, screenW)
+        DataStore.update('currentTown', StartTownData)
+        DataStore.get('fsm'):transition("idle")
+    end
 end
 
 function Update(dt)
@@ -119,11 +140,11 @@ function Update(dt)
     
     local map = DataStore.get('map')
 
-    if not DataStore.get('canvasMap') and map then
+    if not DataStore.get('canvasMap') and map and DataStore.get('currentTown') then
+        print("new town found: draw new town about " .. DataStore.get('currentTown').name)
         local newCanvasMap = CanvasMap
-            .new(map, StartTownData.name, 800, 600, 4.0)
+            .new(map, DataStore.get('currentTown').name, 800, 600, 4.0)
         DataStore.update('canvasMap', newCanvasMap)
-        DataStore.update('currentTown', newCanvasMap:getNameTown(StartTownData.name))
     end
 end
 
@@ -242,4 +263,12 @@ function CheckHit(x, y)
     end
 
     return false
+end
+
+function Quit()
+    -- 종료 직전 자동 저장 수행
+    SaveSystem.save()
+    
+    -- 추가적인 정리 작업이 필요하다면 여기서 수행
+    print("Application is shutting down...")
 end

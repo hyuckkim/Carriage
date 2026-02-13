@@ -34,14 +34,14 @@ local function GenGrass (initPos, rng)
     })
 end
 
-local function SpawnTownSceneryCoroutine(townData, leftX, range)
+local function SpawnTownSceneryCoroutine(townName, townGroup, leftX, range)
     return coroutine.create(function()
         local wagon = ObjectManager:Get('wagon')
         if not wagon then coroutine.yield() end
 
         -- 1. 결정론적 시드 설정
         local s = 0
-        for i = 1, #townData.name do s = (s * 31) + townData.name:byte(i) end
+        for i = 1, #townName do s = (s * 31) + townName:byte(i) end
         local rng = res.random(s)
 
         local currentX = leftX
@@ -52,12 +52,12 @@ local function SpawnTownSceneryCoroutine(townData, leftX, range)
         while currentX < endX do
             if not hasSpawnedHouse and currentX >= midX then
                 -- 건물 생성
-                local sprite, groupName = HouseGen(townData.group, rng)
+                local sprite, groupName = HouseGen(townGroup, rng)
                 
                 if sprite then
                     ObjectManager:Register({
                         sprite = sprite,
-                        key = "town_building_" .. townData.name .. "_" .. math.random(1000, 9999),
+                        key = "town_building_" .. townName .. "_" .. math.random(1000, 9999),
                         x = currentX,
                         y = wagon.y,
                         layer = -35, 

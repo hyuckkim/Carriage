@@ -1,8 +1,9 @@
 local ObjectManager = require("lib.ObjectManager")
 local DataStore = require("src.Datastore")
-local CanvasMap = require("src.UI.canvasMap")
+local Customer = require("src.Object.customer")
 local CharacterFactory = require("src.Table.CharacterFactory")
 local genGrass = require("src.GenGrass")
+local UIManager = require("lib.UIManager")
 
 local workthrough = 0
 local endto = 5000
@@ -51,7 +52,7 @@ local function walkWithStation()
     -- 마을이 화면 오른쪽 끝에 걸치기 시작할 때
     if not townCoroutine and finalWagonX <= screenW + 500 then 
         if not destTown then return end
-        townCoroutine = genGrass.SpawnTownScenery(destTown, finalWagonX, screenW)
+        townCoroutine = genGrass.SpawnTownScenery(destTown.name, destTown.group, finalWagonX, screenW)
     end
 
     if finalWagonX <= screenW then
@@ -94,12 +95,15 @@ function WalkState.onEnter()
         p:StartTravel(i, wagon)
     end
 
-    local newBurg = DataStore.get('canvasMap').selectedBurg
-    local oldBurg = DataStore.get('currentTown')
-    DataStore.update('previousTown', oldBurg)
-    DataStore.update('currentTown', newBurg)
-    DataStore.update('canvasMap', CanvasMap.new(DataStore.get('map'), newBurg.name, 800, 600, 4.0))
-    ObjectManager:Remove('chara')
+    -- 정상적인 진입 (파일 로드가 아님)
+    if DataStore.get('canvasMap') then
+        local newBurg = DataStore.get('canvasMap').selectedBurg
+        local oldBurg = DataStore.get('currentTown')
+        DataStore.update('previousTown', oldBurg)
+        DataStore.update('currentTown', newBurg:to_table())
+        DataStore.update('canvasMap', nil)
+        ObjectManager:Remove('chara')
+    end
 end
 
 function WalkState.onUpdate(dt)
@@ -159,6 +163,9 @@ function WalkState.onDraw()
     g.rect(wagonX + 10, wagonY - 50, (200 / endto) * workthrough, 5)
 end
 
+function WalkState.onClick()
+    UIManager:open('walkPanel')
+end
 function WalkState.onExit()
     local wagon = ObjectManager:Get('wagon')
     local town = DataStore.get('currentTown')
@@ -168,6 +175,97 @@ function WalkState.onExit()
     for i, p in ipairs(passengers) do
         p:EndTravel(town and town.name or nil, wagon)
     end
+end
+
+function WalkState.GetPersistentData()
+    local town = DataStore.get('currentTown') or nil
+    local townName = town and town.name or ''
+    
+    local data = {
+        stateType = "walk",
+        workthrough = workthrough,
+        endto = endto,
+        passengers = {},
+        stationCustomers = {},
+        prev = DataStore.get('previousTown') or {},
+        town = town or {},
+    }
+
+    -- 1. 탑승객 데이터 추출
+    local boarding = ObjectManager:GetAll(function(obj) return obj.is_customer and obj.isBoarding end)
+    for _, p in ipairs(boarding) do
+        table.insert(data.passengers, p:GetPersistentData())
+    end
+
+    -- 2. 역 대기 손님 데이터 추출
+    if customersSpawned then
+        local station = ObjectManager:GetAll(function(obj) 
+            return obj.is_customer and not obj.isBoarding and obj.data.origin == townName
+        end)
+        for _, s in ipairs(station) do
+            table.insert(data.stationCustomers, s:GetPersistentData())
+        end
+    end
+    
+    return data
+end
+
+function WalkState.Restore(data)
+    local wagon = ObjectManager:Get('wagon')
+    local screenW, _ = sys.getSize()
+
+    -- 1. 기본 수치 복구
+    workthrough = data.workthrough or 0
+    endto = data.endto or 5000
+    currentSpeed = speed -- 로드 즉시 달리는 생동감 부여
+    distBuffer = 0
+    
+    local remainingDist = endto - workthrough
+    local finalWagonX = remainingDist 
+
+    -- [추가] 화면 내 기본 풀 채우기
+    -- 로드 시점에 화면이 비어있지 않도록 0부터 screenW까지 풀을 무작위로 뿌림
+    for x = 0, screenW, math.random(40, 120) do
+        genGrass.GenGrass(x, math.random)
+    end
+
+    local prevTown = data.prev
+    local destTown = data.town
+    if prevTown then
+        DataStore.update('previousTown', prevTown)
+        if workthrough < screenW then 
+            townCoroutine = genGrass.SpawnTownScenery(prevTown.name, prevTown.group, -workthrough, screenW)
+        end
+    end
+    if destTown then
+        DataStore.update('currentTown', destTown)
+        if finalWagonX <= screenW then
+            townCoroutine = genGrass.SpawnTownScenery(destTown.name, destTown.group, finalWagonX, screenW)
+            if finalWagonX <= screenW then
+                isEnteringTown = true
+            end
+        end
+    end
+    -- 3. 손님 및 탑승객 복구 (이전 로직 동일)
+    for i, pData in ipairs(data.passengers or {}) do
+        local p = Customer.newFromData(pData)
+        ObjectManager:Register(p)
+        p:StartTravel(i, wagon)
+    end
+
+    if data.stationCustomers and #data.stationCustomers > 0 then
+        for _, sData in ipairs(data.stationCustomers) do
+            local s = Customer.newFromData(sData)
+            ObjectManager:Register(s)
+        end
+        customersSpawned = true 
+    else
+        customersSpawned = false
+    end
+
+    -- 4. 마차 애니메이션 동기화
+    wagon:act('walk')
+    ObjectManager:Get('wagonTop'):act('walk')
 end
 
 return WalkState

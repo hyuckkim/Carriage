@@ -3,10 +3,13 @@ local Anim = {}
 Anim.__index = Anim
 
 -- imgIds: { "skin_id", "cloth_id", "hair_id" } 처럼 테이블로 받습니다.
-function Anim.new(imgIds, frameW, frameH, cols)
+function Anim.new(imgPaths, frameW, frameH, cols)
+    local paths = (type(imgPaths) == "table") and imgPaths or { imgPaths }
+    
     ---@class Anim
     local obj = {
-        layers = (type(imgIds) == "table") and imgIds or { imgIds }, -- 무조건 테이블로 변환
+        imgPaths = paths, -- [저장용] 경로 테이블
+        imgIds = {},      -- [실행용] 실제 ID 테이블
         fw = frameW, fh = frameH,
         cols = cols or 1,
         animations = {},
@@ -15,17 +18,26 @@ function Anim.new(imgIds, frameW, frameH, cols)
         timer = 0,
         flipX = false
     }
+    
+    -- 생성 시점에 경로를 ID로 변환하여 채워넣음
+    for i, path in ipairs(paths) do
+        -- res.image가 이미 로드된 건 기존 ID를 줄 테니 안심하고 호출
+        obj.imgIds[i] = res.image(path)
+    end
+    
     return setmetatable(obj, Anim)
 end
 
 -- 특정 레이어만 교체하는 기능 (예: 옷 갈아입기)
-function Anim:setLayer(index, newImgId)
-    self.layers[index] = newImgId
+function Anim:setLayer(index, newPath)
+    self.imgPaths[index] = newPath
+    self.imgIds[index] = res.image(newPath)
 end
 
 -- 새로운 레이어 추가 (예: 무기 장착)
-function Anim:addLayer(imgId)
-    table.insert(self.layers, imgId)
+function Anim:addLayer(newPath)
+    table.insert(self.imgPaths, newPath)
+    table.insert(self.imgIds, res.image(newPath))
 end
 
 function Anim:add(name, frames, intervalMs, loop)
@@ -67,9 +79,9 @@ function Anim:draw(x, y, w, h)
     local drawW = w or self.fw
     local drawH = h or self.fh
 
-    for _, imgId in ipairs(self.layers) do
-        if imgId then
-            g.image(imgId, x, y, drawW, drawH, sx, sy, self.fw, self.fh, self.flipX)
+    for _, id in ipairs(self.imgIds) do
+        if id then
+            g.image(id, x, y, drawW, drawH, sx, sy, self.fw, self.fh, self.flipX)
         end
     end
 end
@@ -88,10 +100,24 @@ function Anim:drawFrame(animName, frameIdx, x, y, w, h)
     local drawH = h or self.fh
 
     -- 3. 레이어 한땀 한땀 그리기
-    for _, imgId in ipairs(self.layers) do
-        if imgId then
-            g.image(imgId, x, y, drawW, drawH, sx, sy, self.fw, self.fh)
+
+    for _, id in ipairs(self.imgIds) do
+        if id then
+            g.image(id, x, y, drawW, drawH, sx, sy, self.fw, self.fh, self.flipX)
         end
     end
+end
+
+function Anim:GetPersistentData()
+    ---@class AnimPersistentData
+    return {
+        imgPaths = self.imgPaths,
+        fw = self.fw,
+        fh = self.fh,
+        cols = self.cols,
+        current = self.current,
+        flipX = self.flipX,
+        animations = self.animations
+    }
 end
 return Anim

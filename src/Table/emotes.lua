@@ -5,7 +5,7 @@ local Emotes = {}
 -- 새로운 이모트 애니메이션 객체를 생성하는 함수
 function Emotes.new()
     -- 호출될 때마다 독립적인 Anim 객체 생성
-    local instance = Anim.new(res.image('assets/emoji.png'), 16, 16, 19)
+    local instance = Anim.new('assets/emoji.png', 16, 16, 19)
 
     instance:add('question',    Range(1, 19),   100)
     instance:add('exclamation', Range(20, 38),  100)

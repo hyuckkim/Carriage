@@ -231,11 +231,9 @@ function CharacterFactory.createCustomer(pos, currentTown, key)
     for i, cat in ipairs(categories) do
         local info = pickSkinInfo(gender, cat)
         if info then
-            local imgId = res.image(info.path)
-            if imgId then
-                table.insert(layerIds, imgId)
-                visualRecipe.parts[cat] = { grade = info.grade, file = info.file, id = imgId }
-            end
+
+            table.insert(layerIds, info.path)
+            visualRecipe.parts[cat] = { grade = info.grade, file = info.file, id = info.path }
         end
     end
     if #layerIds == 0 then return nil end
@@ -260,7 +258,7 @@ function CharacterFactory.createCustomer(pos, currentTown, key)
     local t1 = math.random(#allTraits)
     local t2 = math.random(#allTraits)
     while t1 == t2 do t2 = math.random(#allTraits) end
-    local selectedTraits = { allTraits[t1].name, allTraits[t2].name }
+    local selectedTraits = { allTraits[t1], allTraits[t2] }
 
     local customerData = {
         name = firstNames[math.random(#firstNames)] .. lastNames[math.random(#lastNames)],
