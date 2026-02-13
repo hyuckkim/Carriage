@@ -144,10 +144,11 @@ end
 UIFactory.Fonts = {
     Default = { path = "assets/NanumSquareRoundR.ttf", name = "나눔스퀘어라운드 Regular", size = 20, color = {255, 255, 255}, align = "left" },
     Gray    = { path = "assets/NanumSquareRoundR.ttf", name = "나눔스퀘어라운드 Regular", size = 20, color = {100, 100, 100}, align = "left" },
+    Red     = { path = "assets/NanumSquareRoundR.ttf", name = "나눔스퀘어라운드 Regular", size = 20, color = {255, 20, 20}, align = "left" },
     Small   = { path = "assets/NanumSquareRoundR.ttf", name = "나눔스퀘어라운드 Regular", size = 12, color = {255, 255, 255}, align = "left" },
-    Trait   = { path = "assets/NanumSquareRoundR.ttf", name = "나눔스퀘어라운드 Regular", size = 12, color = {255, 255, 200}, align = "left" },
-    Trait_positive = { path = "assets/NanumSquareRoundR.ttf", name = "나눔스퀘어라운드 Regular", size = 12, color = {200, 255, 200}, align = "left" },
-    Trait_negative = { path = "assets/NanumSquareRoundR.ttf", name = "나눔스퀘어라운드 Regular", size = 12, color = {255, 200, 200}, align = "left" },
+    Positive = { path = "assets/NanumSquareRoundR.ttf", name = "나눔스퀘어라운드 Regular", size = 12, color = {200, 255, 200}, align = "left" },
+    Negative = { path = "assets/NanumSquareRoundR.ttf", name = "나눔스퀘어라운드 Regular", size = 12, color = {255, 200, 200}, align = "left" },
+    Neutral  = { path = "assets/NanumSquareRoundR.ttf", name = "나눔스퀘어라운드 Regular", size = 12, color = {255, 255, 200}, align = "left" },
     Quote   = { path = "assets/NanumSquareRoundR.ttf", name = "나눔스퀘어라운드 Regular", size = 10, color = {0, 0, 0}, align = "left" }
 }
 

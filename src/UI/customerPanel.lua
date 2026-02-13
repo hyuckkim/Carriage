@@ -7,12 +7,6 @@ local UIViewport = require ("lib.UI.UIViewport")
 local UIFactory = require("src.Table.UiFactory")
 local Datastore = require("src.Datastore")
 
-local traitStyles = {
-    Positive = "Trait_positive", -- 녹색/금색 계열
-    Negative = "Trait_negative", -- 빨간색 계열
-    Neutral = "Trait"    -- 회색/흰색 계열
-}
-
 return function ()
     ---@class customerPanel: DraggablePanel
     local panel = UIFactory.createDraggablePanel("Default", 300, 700, 320, 350)
@@ -50,11 +44,16 @@ return function ()
                 
                 -- 특성(Traits) 표시 로직
                 -- 만약 traits가 배열 형태라면 반복문으로 처리하면 더 좋습니다.
-                if d.traits and d.traits[1] then
-                    ctx:addChild(UIFactory.createText(100, 44, d.traits[1], traitStyles.Positive))
-                end
-                if d.traits and d.traits[2] then
-                    ctx:addChild(UIFactory.createText(160, 44, d.traits[2], traitStyles.Positive))
+                if d.traits then
+                    for i, trait in ipairs(d.traits) do
+                        local isTable = type(trait) == "table"
+                        local tName = isTable and trait.name or trait
+                        local tType = isTable and trait.type or "Neutral"
+                        
+                        local tx = 100 + (i - 1) * 65
+                        
+                        ctx:addChild(UIFactory.createText(tx, 44, tName, tType))
+                    end
                 end
                 local isFull = boardingCount >= 4
                 local btnText = customer.isBoarding and "환불" or "승차"
