@@ -15,7 +15,7 @@ function SaveSystem.save()
         state = stateSpecificData,
     }
 
-    res.saveTable("save_data.json", root)
+    res.saveTable("save.json", root)
 end
 
 function SaveSystem.load()

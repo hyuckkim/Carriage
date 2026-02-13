@@ -95,14 +95,25 @@ function WalkState.onEnter()
         p:StartTravel(i, wagon)
     end
 
-    -- 정상적인 진입 (파일 로드가 아님)
-    if DataStore.get('canvasMap') then
-        local newBurg = DataStore.get('canvasMap').selectedBurg
+    -- 정상적인 진입 (파일 로드가 아님): idleState에서 진입했으므로
+    local map = DataStore.get('canvasMap')
+    if map then
+        local newBurg = map.selectedBurg
         local oldBurg = DataStore.get('currentTown')
+
+        if newBurg and oldBurg then
+            local dist = map:getRealDistance(oldBurg.x, oldBurg.y, newBurg.x, newBurg.y)
+            local KM_TO_PX = 13440
+
+            endto = dist * KM_TO_PX
+        else endto = 50000 end
+
         DataStore.update('previousTown', oldBurg)
         DataStore.update('currentTown', newBurg:to_table())
         DataStore.update('canvasMap', nil)
+
         ObjectManager:Remove('chara')
+
     end
 end
 
@@ -111,7 +122,7 @@ function WalkState.onUpdate(dt)
     
     -- 가속/감속 계산을 위한 계수 (dt가 밀리초이므로 1000으로 나눔)
     -- 가속도 단위를 '픽셀/s^2'로 맞추기 위해 한 번 더 1000으로 나눈 효과를 줍니다.
-    local step = dt * 0.001 
+    local step = dt * 0.001
 
     -- 1. 속도 제어
     if remainingDist <= 0 then

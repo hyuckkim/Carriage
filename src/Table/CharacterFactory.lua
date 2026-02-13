@@ -185,7 +185,6 @@ local function calculateBudget(origin, target, traits)
     -- 1. 거리 계산
     local dist, _ = map:getRealDistance(origin.x, origin.y, target.x, target.y)
     
-    -- [요금 설계] 2.8km에 150G를 맞추기 위한 로직
     local baseFare = 30   -- 기본 요금 (시내 단거리 기본 단가)
     local perKm = 20      -- km당 요금 (거리가 멀수록 수익 체감)
     local distanceFare = dist * perKm
