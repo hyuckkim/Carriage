@@ -60,7 +60,7 @@ local function walkWithStation()
     isEnteringTown = true -- 이제부터 '길' 풀 생성을 중단함
     -- 손님 스폰은 '길'의 풍경과 별개여야 하므로 일반 math.random 사용
         for i = 1, 6 do
-            local spawnX = finalWagonX + math.random(50, 350)
+            local spawnX = finalWagonX + math.random(150, 450)
             CharacterFactory.createCustomer({
                 x = spawnX,
                 y = wagon.y,
@@ -148,7 +148,7 @@ function WalkState.onUpdate(dt)
         target = endto,
         speed = currentSpeed
     })
-    
+
     ObjectManager:MoveWorld(moveAmount, 0)
 
     -- 3. 도착 체크
@@ -192,6 +192,8 @@ function WalkState.onExit()
     for i, p in ipairs(passengers) do
         p:EndTravel(town and town.name or nil, wagon)
     end
+
+    UIManager:closeAll()
 end
 
 function WalkState.GetPersistentData()
