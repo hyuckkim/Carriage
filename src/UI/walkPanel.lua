@@ -22,7 +22,7 @@ return function ()
     panel:addChild(statusText)
 
     -- 골드 (자산)
-    local goldText = UIFactory.createText(220, 45, "0 Gold", "Small")
+    local goldText = UIFactory.createText(220, 45, "0 G", "Small")
     goldText.color = { 255, 215, 0 }
     panel:addChild(goldText)
 
