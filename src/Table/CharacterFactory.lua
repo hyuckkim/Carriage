@@ -3,6 +3,7 @@ local Anim = require('lib.anim')
 local ObjectManager = require("lib.ObjectManager")
 local Customer = require('src.Object.customer')
 local Datastore = require("src.Datastore")
+local NewName = require("src.Table.Name")
 
 local SkinAssets = {
     base_path = "assets/generate/",
@@ -241,9 +242,6 @@ function CharacterFactory.createCustomer(pos, currentTown, key)
     anim:add("idle", {0, 1, 2, 3, 4})
     anim:add("walk", {10, 11, 12, 13, 14, 15, 16, 17})
     anim:play("idle")
-
-    local firstNames = {"김", "이", "박", "최", "정", "강", "조", "윤"}
-    local lastNames = {"철수", "영희", "춘자", "덕배", "광식", "지혜", "칠득", "소희"}
     
     local allTraits = {
         { name = "애주가", type = "Positive" }, { name = "부자", type = "Positive" },
@@ -260,7 +258,7 @@ function CharacterFactory.createCustomer(pos, currentTown, key)
     local selectedTraits = { allTraits[t1], allTraits[t2] }
 
     local customerData = {
-        name = firstNames[math.random(#firstNames)] .. lastNames[math.random(#lastNames)],
+        name = NewName(),
         origin = current and current.name or "알 수 없는 곳",
         destination = targetTown and targetTown.name or "먼 곳",
         -- 거리에 비례한 예산 책정 (예: 1km당 5G)
