@@ -207,7 +207,8 @@ function WalkState.onExit()
 end
 
 function WalkState.GetPersistentData()
-    local town = DataStore.get('currentTown') or nil
+    local town = DataStore.get('currentTown')
+    local prev = DataStore.get('previousTown')
     local townName = town and town.name or ''
     
     local data = {
@@ -216,8 +217,12 @@ function WalkState.GetPersistentData()
         endto = endto,
         passengers = {},
         stationCustomers = {},
-        prev = DataStore.get('previousTown') or {},
-        town = town or {},
+        prev = prev and {
+            name = prev.name, group = prev.group
+        } or {},
+        town = town and {
+            name = town.name, group = town.group
+        } or {},
     }
 
     -- 1. 탑승객 데이터 추출

@@ -119,6 +119,12 @@ function Update(dt)
         DataStore.update('canvasMap', newCanvasMap)
         if newCanvasMap then
             DataStore.update('currentTown', newCanvasMap.centerBurg:to_table())
+
+            local prevTown = DataStore.get('previousTown')
+            if prevTown then
+                DataStore.update('previousTown', newCanvasMap:getNameTown(prevTown.name):to_table())
+                
+            end
         end
     end
 end

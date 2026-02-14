@@ -65,9 +65,9 @@ function IdleState.startBoardingSequence()
             
         end
 
-        for _, c in ObjectManager:GetAll(function(obj)
+        for _, c in ipairs(ObjectManager:GetAll(function(obj)
             return obj.isBoarding
-        end) do
+        end)) do
             -- Move 함수도 밀리초를 쓰므로 1000ms(1초) 동안 이동
             c:Move(wagon.x + 80, wagon.y, 1000)
         end
@@ -141,10 +141,14 @@ function IdleState.startUnboardingSequence()
 end
 
 function IdleState.GetPersistentData()
+    local currnetTown = DataStore.get('currentTown')
     local data = {
         stateType = "idle",
         customers = {},
-        town = DataStore.get('currentTown') or {},
+        town = currnetTown and {
+            name = currnetTown.name,
+            group = currnetTown.group
+        } or {},
     }
 
     local locals = ObjectManager:GetAll(function(obj)
