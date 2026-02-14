@@ -30,7 +30,11 @@ UIFactory.Skins = {
     QuoteL = {
         imagePath = "assets/emoji.png",
         normal = { 161, 227, 15, 12, 11, 2, 2, 5}
-    }
+    },
+    track = {
+        imagePath = "assets/ui_sheet.png",
+        normal = { 208, 149, 64, 7, 9, 9, 2, 3}
+    },
 }
 
 -- 스타일을 적용한 버튼 생성 함수

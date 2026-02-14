@@ -4,6 +4,8 @@ local Customer = require("src.Object.customer")
 local CharacterFactory = require("src.Table.CharacterFactory")
 local genGrass = require("src.GenGrass")
 local UIManager = require("lib.UIManager")
+local UIFactory = require("src.Table.UiFactory")
+local Icons = require("src.Table.Icons")
 
 local workthrough = 0
 local endto = 5000
@@ -197,15 +199,24 @@ function WalkState.onUpdate(dt)
     end
 end
 
+local scrollbarPanel = nil
+local scrollbarIcon = nil
 function WalkState.onDraw()
     local wagon = ObjectManager:Get('wagon')
     if not wagon then return end
 
     local wagonX, wagonY = wagon.x, wagon.y
-    g.color(0, 0, 0)
-    g.rect(wagonX + 10, wagonY - 50, 200, 5)
-    g.color(255, 255, 255)
-    g.rect(wagonX + 10, wagonY - 50, (200 / endto) * workthrough, 5)
+
+    if scrollbarPanel then
+        scrollbarPanel:draw()
+        scrollbarIcon.x = (200 / endto) * workthrough
+        scrollbarIcon:draw()
+    else
+        scrollbarPanel = UIFactory.createPanel('track',
+          wagonX + 10, wagonY - 105, 200, 8)
+        scrollbarIcon = Icons.createItemRect('flag', -4, wagonY - 109, 16, 16)
+    end
+    -- g.rect(wagonX + 10, wagonY - 100, (200 / endto) * workthrough, 5)
 end
 
 function WalkState.onClick()
