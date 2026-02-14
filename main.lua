@@ -45,10 +45,10 @@ local function initStateMachine()
     return fsm
 end
 local function initWindow()
-    sw, sh = sys.getWorkArea()
-    sys.setSize(sw, sh)
-    sys.setPos(0, 0)
-    sys.setCursor()
+    sw, sh = is.workArea()
+    sys.size(sw, sh)
+    sys.pos(0, 0)
+    sys.cursor()
 end
 
 local function initWagon()
@@ -93,7 +93,7 @@ function Init()
     DataStore.update('gold', loadedData.gold or 0)
     
     if not loadedData then
-        local screenW, _ = sys.getSize()
+        local screenW, _ = sys.size()
         
         grassCoroutine = genGrass.SpawnTownScenery(
             StartTownData.name, StartTownData.group, 0, screenW)
@@ -126,11 +126,11 @@ end
 
 function Draw()
     local settings = DataStore.get('settings')
-    local uiAlpha = settings.uiAlpha or 1.0
+    local uiAlpha = settings and settings.uiAlpha or 1.0
 
     -- 1. 게임 월드 렌더링 (배경, 캐릭터, 마차 등)
     g.push()
-        local size = settings.mainSize
+        local size = settings and settings.mainSize or 1.0
         g.scale(size, size, 0, sh)
         
         -- ObjectManager 내부에서 layer < -20인 객체들만 bgAlpha를 적용함
@@ -157,7 +157,7 @@ function Draw()
         -- UI 전체 투명도 적용
         g.globalAlpha(uiAlpha) 
         
-        local uiSize = settings.uiSize
+        local uiSize = settings and settings.uiSize or 1
         g.scale(uiSize, uiSize, 0, sh)
         
         UIManager:draw()

@@ -79,9 +79,8 @@ function IdleState.startBoardingSequence()
             c.visible = false
         end
 
-        -- 4. 잠시 후 상태 전환 (500ms)
         local wait = 0
-        while wait < 500 do
+        while wait < 200 do
             local dt = coroutine.yield()
             wait = wait + dt
         end
@@ -101,6 +100,8 @@ function IdleState.startUnboardingSequence()
         for _, p in ipairs(passengers) do
             p.visible = true
             p.anim:play('walk')
+            p.x = 80
+            p.y = wagon.y
     
             -- 데이터 즉시 처리 (이미 이전 대화에서 논의한 대로)
             if p.isAtDestination then
@@ -115,7 +116,7 @@ function IdleState.startUnboardingSequence()
             
             -- 손님이 내리는 간격 대기 (500ms)
             local t = 0
-            while t < 500 do
+            while t < 200 do
                 t = t + coroutine.yield()
             end
         end
@@ -156,7 +157,7 @@ function IdleState.Restore(data)
     if data.town then
         DataStore.update('currentTown', data.town)
         
-        local screenW, _ = sys.getSize()
+        local screenW, _ = is.size()
         grassCoroutine = genGrass.SpawnTownScenery(
             data.town.name, data.town.group, 0, screenW)
     end

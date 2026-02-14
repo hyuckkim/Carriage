@@ -42,7 +42,7 @@ return function ()
     local currentMonitor = s.monitor
     local monitorBtn
     monitorBtn = UIFactory.createButton("Default", 10, 200, 180, 40, string.format("모니터 변경: %d", currentMonitor), function()
-        local monitors = sys.getMonitors()
+        local monitors = is.monitors()
         currentMonitor = currentMonitor + 1
         if currentMonitor > #monitors then currentMonitor = 1 end
         

@@ -33,7 +33,7 @@ local function walkWithGrass(dt, speed)
 
         if distBuffer >= nextSpawnDist then
             distBuffer = 0
-            local screenW, _ = sys.getSize()
+            local screenW, _ = is.size()
             genGrass.GenGrass(screenW + 100, math.random)
             nextSpawnDist = math.random(40, 120)
         end
@@ -44,7 +44,7 @@ local function walkWithStation()
     local wagon = ObjectManager:Get('wagon')
     if customersSpawned or not wagon then return end
     
-    local screenW, _ = sys.getSize()
+    local screenW, _ = is.size()
     local remainingDist = endto - workthrough
     local finalWagonX = remainingDist
     local destTown = DataStore.get('currentTown')
@@ -241,7 +241,7 @@ end
 
 function WalkState.Restore(data)
     local wagon = ObjectManager:Get('wagon')
-    local screenW, _ = sys.getSize()
+    local screenW, _ = is.size()
 
     -- 1. 기본 수치 복구
     workthrough = data.workthrough or 0

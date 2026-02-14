@@ -56,6 +56,14 @@ function is.key(keyCode) end
 ---@return boolean rbt
 function is.mouse() end
 
+function is.size() end
+function is.pos() end
+function is.acreenSize() end
+function is.workArea() end
+---@return {x: number, y: number, w: number, h: number, workX: number, workY: number, workW: number, workH: number}[]
+function is.monitors() end
+
+
 ---@class res
 res = {}
 ---@return number
@@ -80,18 +88,14 @@ function res.saveTable(path, table) end
 ---@class sys
 sys = {}
 
-function sys.setSize(w, h) end
-function sys.setPos(x, y) end
-function sys.getSize() end
-function sys.getPos() end
-function sys.getScreenSize() end
-function sys.getWorkArea() end
+function sys.size(w, h) end
+function sys.pos(x, y) end
 function sys.showCursor(bool) end
-function sys.setCursor() end
-function sys.setTopmost(bool) end
+function sys.cursor() end
+function sys.topmost(bool) end
+function sys.vsync(bool) end
+function sys.targetFPS(count) end
 
----@return {x: number, y: number, w: number, h: number, workX: number, workY: number, workW: number, workH: number}[]
-function sys.getMonitors() end
 function sys.quit() end
 
 function printOnce(...) end

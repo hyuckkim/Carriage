@@ -22,13 +22,13 @@ function SettingMethod.ApplyUISize(v)
 end
 function SettingMethod.ApplyAlwayTop(v)
     Datastore.get('settings').topmost = v
-    sys.setTopmost(v)
+    sys.topmost(v)
 end
 function SettingMethod.ApplyMonitorIdx(v)
-    local monitors = sys.getMonitors()
+    local monitors = is.monitors()
 
     local m = monitors[v]
-    sys.setPos(m.workX, m.workY)
+    sys.pos(m.workX, m.workY)
     Datastore.get('settings').monitor = v
 end
 function SettingMethod.ApplyStoredPositions(positionTable)

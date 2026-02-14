@@ -26,7 +26,7 @@ end
 -- 매 프레임 업데이트
 function UIManager:update(dt)
     local x, y, ml = is.mouse()
-    local sw, sh = sys.getSize()
+    local sw, sh = is.size()
 
     local size = DataStore.get('settings').uiSize
     local mx = x / size
@@ -140,7 +140,7 @@ end
 
 function UIManager:AdjustScale(oldSize, newSize)
     local x, y = is.mouse() -- 실제 마우스 좌표
-    local sw, sh = sys.getSize()
+    local sw, sh = is.size()
 
     -- UIManager에 직접 등록된 루트 패널들만 순회
     for _, comp in ipairs(self.layers) do
