@@ -24,11 +24,11 @@ UIFactory.Skins = {
         normal = { 32, 154, 32, 32, 0, 0, 0, 0}
     },
     Quote = {
-        imagePath = "assets/Emoji.png",
+        imagePath = "assets/emoji.png",
         normal = { 161, 227, 15, 12, 2, 10, 2, 5}
     },
     QuoteL = {
-        imagePath = "assets/Emoji.png",
+        imagePath = "assets/emoji.png",
         normal = { 161, 227, 15, 12, 11, 2, 2, 5}
     }
 }
