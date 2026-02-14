@@ -4,6 +4,7 @@ local Datastore = require("src.Datastore")
 local UIViewport = require("lib.UI.UIViewport")
 local Icons = require("src.Table.Icons")
 local SaveSystem = require("src.SaveSystem")
+local IdleState = require("src.State.IdleState")
 
 ---@param self DraggablePanel
 local function redraw(self)
@@ -53,8 +54,9 @@ return function ()
     panel:addChild(UIFactory.createButton("Default", 415, 10, 180, 50, "출발", function()
         local map = Datastore.get('canvasMap')
         if not map or not map.selectedBurg then return end
-        Datastore.get('fsm'):transition("walk")
+
         UIManager:closeAll()
+        IdleState.startBoardingSequence()
     end, "Gray"))
 
     -- 2~5: 기타 버튼들

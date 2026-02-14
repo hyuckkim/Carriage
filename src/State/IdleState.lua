@@ -8,7 +8,8 @@ local Customer = require("src.Object.customer")
 
 local IdleState = {}
 local grassCoroutine = nil
-
+local boardingCoroutine = nil
+local unboardingCoroutine = nil
 
 function IdleState.onEnter()
     local wagon = ObjectManager:Get('wagon')
@@ -26,6 +27,7 @@ function IdleState.onEnter()
         chara:act('idle')
         ObjectManager:Register(chara)
     end
+    IdleState.startUnboardingSequence()
 end
 
 function IdleState.onUpdate(dt)
@@ -34,10 +36,103 @@ function IdleState.onUpdate(dt)
         local success, err = coroutine.resume(grassCoroutine)
         if not success then print("Coroutine Error:", err) end
     end
+    if boardingCoroutine and coroutine.status(boardingCoroutine) ~= "dead" then
+        local success, err = coroutine.resume(boardingCoroutine, dt)
+        if not success then print("Boarding Error:", err) end
+    end
+    if unboardingCoroutine and coroutine.status(unboardingCoroutine) ~= "dead" then
+        local success, err = coroutine.resume(unboardingCoroutine, dt)
+        if not success then print("Unboarding Error:", err) end
+    end
 end
 
 function IdleState.onClick()
     UIManager:open('mainPanel')
+end
+
+function IdleState.startBoardingSequence()
+    boardingCoroutine = coroutine.create(function()
+        local wagon = ObjectManager:Get('wagon')
+        local customers = ObjectManager:GetAll(function(obj)
+            return obj.is_customer and obj.isBoarding
+        end)
+
+        -- 1. 모든 손님에게 마차로 이동 명령
+        for _, c in ipairs(customers) do
+            c.behavior_type = 'none'
+            c:StopSay()
+            c.anim:play('walk')
+            
+            -- Move 함수도 밀리초를 쓰므로 1000ms(1초) 동안 이동
+            c:Move(wagon.x + 80, wagon.y, 1000)
+        end
+
+        -- 2. 모든 손님이 도착할 때까지 대기 (1200ms)
+        local timer = 0
+        while timer < 1200 do
+            local dt = coroutine.yield() -- onUpdate에서 들어오는 16.67ms 등
+            timer = timer + dt
+        end
+
+        -- 3. 손님들을 마차 칸으로 '쏙' 사라지게 함
+        for _, c in ipairs(customers) do
+            c.visible = false
+        end
+
+        -- 4. 잠시 후 상태 전환 (500ms)
+        local wait = 0
+        while wait < 500 do
+            local dt = coroutine.yield()
+            wait = wait + dt
+        end
+
+        DataStore.get('fsm'):transition("walk")
+    end)
+end
+
+function IdleState.startUnboardingSequence()
+    unboardingCoroutine = coroutine.create(function()
+        local wagon = ObjectManager:Get('wagon')
+        local passengers = ObjectManager:GetAll(function(obj)
+            return obj.is_customer and obj.isBoarding
+        end)
+
+        -- 1. 한 명씩 순차적으로 내리기
+        for _, p in ipairs(passengers) do
+            p.visible = true
+            p.anim:play('walk')
+    
+            -- 데이터 즉시 처리 (이미 이전 대화에서 논의한 대로)
+            if p.isAtDestination then
+                p.is_customer = false
+                p.isBoarding = false
+                p.is_npc = true
+            end
+
+            -- 마차 밖 임의의 지점으로 걸어나옴 (속도 60도 밀리초 기준이라면 맞춰서 작동할 것)
+            local exitX = wagon.x + math.random(150, 300)
+            p:MoveBySpeed(exitX, wagon.y, 0.08, 'idle')
+            
+            -- 손님이 내리는 간격 대기 (500ms)
+            local t = 0
+            while t < 500 do
+                t = t + coroutine.yield()
+            end
+        end
+
+        -- 2. 모든 손님이 내린 후 작별 인사 대기 (1000ms)
+        local wait = 0
+        while wait < 1000 do
+            wait = wait + coroutine.yield()
+        end
+
+        for _, p in ipairs(passengers) do
+            if p.isAtDestination then
+                p:Say("감사합니다!", "Quote", 2000) -- 대사 지속시간도 2000ms
+                p:MoveBySpeed(-350, p.y, 0.08) -- 퇴장
+            end
+        end
+    end)
 end
 
 function IdleState.GetPersistentData()

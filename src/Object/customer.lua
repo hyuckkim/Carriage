@@ -97,18 +97,12 @@ function Customer:StartTravel(idx, wagon)
 end
 
 function Customer:EndTravel(town, wagon)
-    if town == self.data.destination then
-        ObjectManager:Remove(self.key)
-        return
-    end
-    self:StopSay()
-    self:setPattern(self.arrive_pattern or nil)
-
-    self.x, self.y = math.random() * 400 + 50, wagon.y
-    self.isAbsolute = false
     self.is_traveling = false
-    self.travel_index = 0
-    ObjectManager:SetLayer(self.key, 1)
+    self.isAbsolute = false -- 이제 마차에 귀속되지 않음
+    ObjectManager:SetLayer(self.key, 1) -- 마차보다 앞으로 나오게 설정
+    
+    -- 목적지 도착 여부만 반환하거나 플래그로 저장
+    self.isAtDestination = (town == self.data.destination)
 end
 
 return Customer
