@@ -11,7 +11,7 @@ local speed = 56       -- 목표 최대 속도
 local currentSpeed = 0  -- 현재 속도 (0에서 시작)
 local acceleration = 50 -- 초당 증가할 속도 값 (조절 가능)
 local deceleration = 80 -- 감속도 (가속보다 조금 더 높으면 안정적임)
-local decelDist = 700    -- 목적지로부터 몇 픽셀 전부터 감속할지
+local decelDist = 300    -- 목적지로부터 몇 픽셀 전부터 감속할지
 
 local distBuffer = 0 
 local nextSpawnDist = 0
@@ -158,6 +158,24 @@ function WalkState.onUpdate(dt)
         target = endto,
         speed = currentSpeed
     })
+
+    -- 1. 애니메이션 배율 계산
+    -- 기준 속도(speed = 56)일 때 배율을 1.0으로 잡습니다.
+    local baseSpeed = 70
+    local animScale = currentSpeed / baseSpeed
+    
+    animScale = math.max(animScale, 0.1)
+
+    -- 2. 객체에 배율 적용
+    local wagon = ObjectManager:Get('wagon')
+    local wagonTop = ObjectManager:Get('wagonTop')
+
+    if wagon and wagon.anim then
+        wagon.anim.timeScale = animScale
+    end
+    if wagonTop and wagonTop.anim then
+        wagonTop.anim.timeScale = animScale
+    end
 
     ObjectManager:MoveWorld(moveAmount, 0)
 

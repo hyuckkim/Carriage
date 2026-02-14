@@ -16,6 +16,7 @@ function Anim.new(imgPaths, frameW, frameH, cols)
         current = nil,
         frameIdx = 1,
         timer = 0,
+        timeScale = 1.0,
         flipX = false
     }
     
@@ -59,7 +60,7 @@ function Anim:update(dt)
     local anim = self.animations[self.current]
     if not anim then return end
 
-    self.timer = self.timer + dt
+    self.timer = self.timer + (dt * self.timeScale)
     while self.timer >= anim.interval do
         self.timer = self.timer - anim.interval
         self.frameIdx = self.frameIdx + 1
