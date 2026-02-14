@@ -54,7 +54,7 @@ function IdleState.startBoardingSequence()
     boardingCoroutine = coroutine.create(function()
         local wagon = ObjectManager:Get('wagon')
         local customers = ObjectManager:GetAll(function(obj)
-            return obj.is_customer and obj.isBoarding
+            return obj.is_customer
         end)
 
         -- 1. 모든 손님에게 마차로 이동 명령
@@ -63,10 +63,14 @@ function IdleState.startBoardingSequence()
             c:StopSay()
             c.anim:play('walk')
             
+        end
+
+        for _, c in ObjectManager:GetAll(function(obj)
+            return obj.isBoarding
+        end) do
             -- Move 함수도 밀리초를 쓰므로 1000ms(1초) 동안 이동
             c:Move(wagon.x + 80, wagon.y, 1000)
         end
-
         -- 2. 모든 손님이 도착할 때까지 대기 (1200ms)
         local timer = 0
         while timer < 1200 do
