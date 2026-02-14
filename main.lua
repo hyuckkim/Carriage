@@ -89,16 +89,15 @@ function Init()
 
     SettingMethod.ApplyAll()
     local loadedData = SaveSystem.load()
-
-    DataStore.update('gold', loadedData.gold or 0)
-    
-    if not loadedData then
-        local screenW, _ = sys.size()
+    if not loadedData.gold then
+        local screenW, _ = is.size()
         
         grassCoroutine = genGrass.SpawnTownScenery(
             StartTownData.name, StartTownData.group, 0, screenW)
         DataStore.update('currentTown', StartTownData)
         DataStore.get('fsm'):transition("prologue")
+    else
+        DataStore.update('gold', loadedData.gold)
     end
 end
 
