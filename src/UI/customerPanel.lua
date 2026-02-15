@@ -26,7 +26,7 @@ return function ()
         self.countText:setText(string.format("현재 손님: %d / 4", boardingCount))
 
         for i = 1, 4 do
-            local customer = customers[idx + i]
+            local customer = customers[idx + i - 1]
             local ctx = self:at(i)
             ctx.children = {}
 
@@ -96,7 +96,7 @@ return function ()
         if self.mainSlider.setItems then
             self.mainSlider:setItems(Range(scrollRange))
         end
-        self:onSetScroll(self.mainSlider.value or 1)
+        self:onSetScroll(1)
     end
 
     local slider = UIFactory.createSlider(300, 10, 10, 280, {1, 2, 3, 4, 5}, function(v)
