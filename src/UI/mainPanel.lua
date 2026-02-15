@@ -6,6 +6,7 @@ local Icons = require("src.Table.Icons")
 local SaveSystem = require("src.SaveSystem")
 local IdleState = require("src.State.IdleState")
 local Sounds = require("src.Sounds")
+local CanvasMap = require("src.UI.canvasMap")
 
 ---@param self DraggablePanel
 local function redraw(self)
@@ -79,22 +80,33 @@ return function ()
 
     end))
 
+    panel.mapOffsetX = 200
+    panel.mapOffsetY = 150
+    local MAP_W, MAP_H = 400, 300
+    local VIEW_W, VIEW_H = 200, 150
+
     -- 6: 지도 뷰포트
     panel:addChild(UIViewport.new(10, 10, 200, 150, function (x, y, w, h)
         local map = Datastore.get('canvasMap')
         if map then
-            map:Draw(x, y, w, h, 200, 150, 400, 300)
+            map:Draw(x, y, w, h, panel.mapOffsetX, panel.mapOffsetY, MAP_W, MAP_H)
         end
     end, function (x, y, button)
         local map = Datastore.get('canvasMap')
         local currentTown = Datastore.get('currentTown')
         if map and currentTown then
-            local town = map:getClickTown(x, y, 200, 150, 200, 150, 400, 300)
-            if not town then redraw(panel) return end
+            local town = map:getClickTown(x, y, VIEW_W, VIEW_H, panel.mapOffsetX, panel.mapOffsetY, MAP_W, MAP_H)
+            local route = town and map:findRoadPathWithLimit(town.name, currentTown.name)
 
-            -- 경로가 있는지 확인 (findRoadPathWithLimit 활용)
-            local route = map:findRoadPathWithLimit(town.name, currentTown.name)
             if not route or town.name == currentTown.name then
+                panel.mapOffsetX = panel.mapOffsetX + x - VIEW_W / 2
+                panel.mapOffsetY = panel.mapOffsetY + y - VIEW_H / 2
+                panel.mapOffsetX = math.max(0,
+                    math.min(panel.mapOffsetX, MAP_W)
+                )
+                panel.mapOffsetY = math.max(0,
+                    math.min(panel.mapOffsetY, MAP_H)
+                )
                 map.selectedBurg = nil
             else
                 map.selectedBurg = town
@@ -111,6 +123,14 @@ return function ()
     panel:addChild(UIFactory.createText(10, 220, "설명 정보", "Small"))
 
     
+    panel:addChild(UIFactory.createSlider(10, 155, 200, 8, {2, 2.3, 2.6, 3, 3.3, 3.6, 4.0}, function (v)    
+        local map = Datastore.get('map')
+        if not map then return end
+        local newCanvasMap = CanvasMap
+            .new(map, Datastore.get('currentTown').name, 800, 600, v)
+        Datastore.update('canvasMap', newCanvasMap)
+    end, 7))
+
     local statusText = UIFactory.createText(220, 15, "운송 일지", "Default")
     panel:addChild(statusText)
 

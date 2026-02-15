@@ -5,6 +5,7 @@ local UIViewport = require("lib.UI.UIViewport")
 local Icons = require("src.Table.Icons")
 local SaveSystem = require("src.SaveSystem")
 local Sounds = require("src.Sounds")
+local CanvasMap = require("src.UI.canvasMap")
 
 return function ()
     ---@class walkPanel: DraggablePanel
@@ -12,12 +13,34 @@ return function ()
     local panel = UIFactory.createDraggablePanel("Default", 300, 700, 420, 200)
 
     -- [1구역: 왼쪽 - 시각적 정보 (지도)]
+    panel.mapOffsetX = 200
+    panel.mapOffsetY = 150
+    local MAP_W, MAP_H = 400, 300
+    local VIEW_W, VIEW_H = 200, 150
+
     panel:addChild(UIViewport.new(10, 10, 200, 150, function (x, y, w, h)
         local map = DataStore.get('canvasMap')
         if map then
-            map:Draw(x, y, w, h, 200, 150, 400, 300)
+            map:Draw(x, y, w, h, panel.mapOffsetX, panel.mapOffsetY, MAP_W, MAP_H)
         end
-    end, function (x, y, button) end))
+    end, function (x, y, button)
+        panel.mapOffsetX = panel.mapOffsetX + x - VIEW_W / 2
+        panel.mapOffsetY = panel.mapOffsetY + y - VIEW_H / 2
+        panel.mapOffsetX = math.max(0,
+            math.min(panel.mapOffsetX, MAP_W)
+        )
+        panel.mapOffsetY = math.max(0,
+            math.min(panel.mapOffsetY, MAP_H)
+        )
+    end))
+
+    panel:addChild(UIFactory.createSlider(10, 155, 200, 8, {2, 2.3, 2.6, 3, 3.3, 3.6, 4.0}, function (v)    
+        local map = DataStore.get('map')
+        if not map then return end
+        local newCanvasMap = CanvasMap
+            .new(map, DataStore.get('currentTown').name, 800, 600, v)
+        DataStore.update('canvasMap', newCanvasMap)
+    end, 7))
 
     -- [2구역: 중앙 - 수치 정보 (자산 및 주행)]
     -- 제목/상태
