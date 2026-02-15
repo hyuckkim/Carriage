@@ -25,7 +25,7 @@ return function ()
         self.countText:setText(string.format("현재 손님: %d / 4", boardingCount))
 
         for i = 1, 4 do
-            local customer = customers[idx + i - 1]
+            local customer = customers[idx + i]
             local ctx = self:at(i)
             ctx.children = {}
 
@@ -91,18 +91,17 @@ return function ()
         
         -- 슬라이더 범위 설정 (최소 1로 고정하여 0이나 음수 방지)
         local scrollRange = math.max(1, totalCount - 3)
-        
-        -- 슬라이더가 5번째 자식(at(5))이라면 아이템 개수 갱신
-        if self:at(5).setItems then
-            self:at(5):setItems(Range(scrollRange))
+        if self.mainSlider.setItems then
+            self.mainSlider:setItems(Range(scrollRange))
         end
-        local slider = self:at(5)
-        self:onSetScroll(slider.value or 1)
+        self:onSetScroll(self.mainSlider.value or 1)
     end
 
-    panel:addChild(UIFactory.createSlider(300, 10, 10, 280, {1, 2, 3, 4, 5}, function(v)
+    local slider = UIFactory.createSlider(300, 10, 10, 280, {1, 2, 3, 4, 5}, function(v)
         panel:onSetScroll(v)
-    end))
+    end)
+    panel.mainSlider = slider
+    panel:addChild(slider)
     panel:addChild(UIFactory.createButton("Default", 230, 300, 80, 40, "완료", function()
         UIManager:close(panel)
     end))

@@ -56,6 +56,12 @@ return function ()
                     local tType = type(trait) == "table" and trait.type or "Neutral"
                     ctx:addChild(UIFactory.createText(85, 42, tName, tType))
                 end
+                if d.traits and d.traits[2] then
+                    local trait = d.traits[2]
+                    local tName = type(trait) == "table" and trait.name or trait
+                    local tType = type(trait) == "table" and trait.type or "Neutral"
+                    ctx:addChild(UIFactory.createText(145, 42, tName, tType))
+                end
             else
                 -- 빈 슬롯 표시 (선택 사항)
                 ctx:addChild(UIFactory.createText(85, 15, "(빈 좌석)", "Gray"))
