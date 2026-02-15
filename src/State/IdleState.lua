@@ -57,12 +57,10 @@ function IdleState.startBoardingSequence()
             return obj.is_customer
         end)
 
-        -- 1. 모든 손님에게 마차로 이동 명령
+        -- 1. 모든 손님을 일단 멈춤
         for _, c in ipairs(customers) do
             c.behavior_type = 'none'
             c:StopSay()
-            c.anim:play('walk')
-            
         end
 
         for _, c in ipairs(ObjectManager:GetAll(function(obj)
@@ -70,6 +68,7 @@ function IdleState.startBoardingSequence()
         end)) do
             -- Move 함수도 밀리초를 쓰므로 1000ms(1초) 동안 이동
             c:Move(wagon.x + 80, wagon.y, 1000)
+            c.anim:play('walk')
         end
         -- 2. 모든 손님이 도착할 때까지 대기 (1200ms)
         local timer = 0
