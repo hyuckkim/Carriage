@@ -11,7 +11,7 @@ return function ()
     -- 1️⃣ 상단 제목 영역
     -------------------------------------------------
 
-    panel:addChild(UIFactory.createText(20, 15, "Carriage", "Large"))
+    panel:addChild(UIFactory.createText(20, 15, "Carriage", "Default"))
     panel:addChild(UIFactory.createText(20, 45, "By hyuckkim", "Small"))
     panel:addChild(UIFactory.createText(20, 70, "Open Source & Assets", "Default"))
 
@@ -51,6 +51,20 @@ return function ()
             license = "Standard Unity Asset Store EULA",
             url = "https://assetstore.unity.com/packages/audio/sound-fx/fantasy-user-interface-sounds-lite-edition-272919",
             thumbnail = "assets/thumbs/sfx.png"
+        },
+        {
+            name = "한국 도시 이름",
+            author = "텔크 (telk5093@gmail.com)",
+            license = "CC BY-NC-SA 3.0 (Non-Commercial, ShareAlike)",
+            url = "https://github.com/KoreanGRF/KoreanTownNames",
+            thumbnail = "assets/thumbs/koreantownnames.png"
+        },
+        {
+            name = "Azgaar's Fantasy Map Generator",
+            author = "Azgaar",
+            license = "MIT License", 
+            url = "https://azgaar.github.io/Fantasy-Map-Generator/",
+            thumbnail = "assets/thumbs/fantasymap.png"
         }
     }
 

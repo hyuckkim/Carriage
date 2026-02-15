@@ -2,7 +2,7 @@ require('src.globals')
 require('defines')
 
 local debugger = { x = 0, y = 0, visible = false }
-WindowTitle = "wagon"
+WindowTitle = "Carriage"
 
 local UIManager = require("lib.UIManager")
 local DataStore = require("src.Datastore")
