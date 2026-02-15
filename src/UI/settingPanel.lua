@@ -38,10 +38,15 @@ return function ()
         SettingMethod.ApplyAlwayTop(v)
     end, Datastore.get('settings').topmost ~= false))
 
+    panel:addChild(UIFactory.createText(20, 192, "효과음 사용", 'Small'))
+    panel:addChild(UIFactory.createCheckbox("Default", 160, 190, 24, 24, function(v)
+        SettingMethod.ApplySFXEnabled(v)
+    end, s.sfxEnabled ~= false))
+
     -- 4. 모니터 변경 버튼
     local currentMonitor = s.monitor
     local monitorBtn
-    monitorBtn = UIFactory.createButton("Default", 10, 200, 180, 40, string.format("모니터 변경: %d", currentMonitor), function()
+    monitorBtn = UIFactory.createButton("Default", 10, 220, 180, 40, string.format("모니터 변경: %d", currentMonitor), function()
         local monitors = is.monitors()
         currentMonitor = currentMonitor + 1
         if currentMonitor > #monitors then currentMonitor = 1 end
@@ -70,7 +75,7 @@ return function ()
     end, FindIndex(alphaOptions, s.bgAlpha or 1.0)))
 
     -- 5. 완료/닫기 버튼
-    panel:addChild(UIFactory.createButton("Default", 90, 250, 100, 40, "완료", function()
+    panel:addChild(UIFactory.createButton("Default", 290, 270, 100, 40, "완료", function()
         SettingMethod.Save()
         UIManager:close(panel)
     end))

@@ -43,6 +43,12 @@ function Canvas:text(fontId, name, x, y) end
 function Canvas:image(imgId, x, y, w, h, sx, sy, sw, sh) end
 function Canvas:draw(x, y, w, h, sx, sy, sw, sh) end
 
+---@class s
+s = {}
+function s.play(id, loop, volume) end
+function s.stop(handle) end
+function s.volume(handle, vol) end
+
 ---@class is
 is = {}
 
@@ -72,6 +78,7 @@ function res.font(name, size) end
 function res.fontFile(path, name, size) end
 function res.json(path) end
 function res.random(seed) end
+function res.sound(path) end
 
 ---@return Task
 function res.jsonAsync(path) end

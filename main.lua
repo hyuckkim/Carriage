@@ -83,6 +83,7 @@ function Init()
     UIManager:add("settingPanel", require("src.UI.settingPanel")())
     UIManager:add("customerPanel", require("src.UI.customerPanel")())
     UIManager:add("walkPanel", require("src.UI.walkPanel")())
+    UIManager:add("infoPanel", require("src.UI.infoPanel")())
     UIManager:add("passangerPanel", require("src.UI.passangerPanel")())
 
     DataStore.registerTask('map', res.jsonAsync('map.json'))

@@ -3,6 +3,7 @@ local ObjectManager = require("lib.ObjectManager")
 local UIElement = require("lib.UI.UIElement")
 local UIViewport = require("lib.UI.UIViewport")
 local UIFactory = require("src.Table.UiFactory")
+local Sounds = require("src.Sounds")
 
 return function ()
     ---@class passengerPanel: DraggablePanel
@@ -72,6 +73,7 @@ return function ()
     -- 닫기 버튼 (중앙 하단)
     panel:addChild(UIFactory.createButton("Default", 215, 290, 80, 35, "닫기", function()
         panel.visible = false
+        Sounds.play('click')
     end))
 
     panel.visible = false

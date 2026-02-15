@@ -4,6 +4,7 @@ local DataStore = require("src.Datastore")
 local UIViewport = require("lib.UI.UIViewport")
 local Icons = require("src.Table.Icons")
 local SaveSystem = require("src.SaveSystem")
+local Sounds = require("src.Sounds")
 
 return function ()
     ---@class walkPanel: DraggablePanel
@@ -34,18 +35,21 @@ return function ()
 
     panel:addChild(UIFactory.createButton("Default", 235, 148, 180, 45, "승객 목록", function()
         UIManager:open('passangerPanel')
+        Sounds.play('click')
     end))
 
 
     -- 1. 설정 버튼
     local settingBtn = Icons.createIconButton('setting', 6, 164, 32, 32, function()
         UIManager:open('settingPanel')
+        Sounds.play('click')
     end)
     panel:addChild(settingBtn)
 
     -- 2. 종료 버튼
     local closeBtn = Icons.createIconButton('close', 36, 164, 32, 32, function()
         SaveSystem.save()
+        Sounds.play('click')
         sys.quit()
     end)
     panel:addChild(closeBtn)
@@ -53,6 +57,7 @@ return function ()
     -- 3. 정보 버튼
     local infoBtn = Icons.createIconButton('info', 66, 164, 32, 32, function()
         UIManager:open('infoPanel')
+        Sounds.play('click')
     end)
     panel:addChild(infoBtn)
 

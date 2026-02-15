@@ -5,6 +5,7 @@ local UIViewport = require("lib.UI.UIViewport")
 local Icons = require("src.Table.Icons")
 local SaveSystem = require("src.SaveSystem")
 local IdleState = require("src.State.IdleState")
+local Sounds = require("src.Sounds")
 
 ---@param self DraggablePanel
 local function redraw(self)
@@ -58,18 +59,23 @@ return function ()
         UIManager:closeAll()
         IdleState.startBoardingSequence()
     end, "Gray"))
+        Sounds.play('click')
 
     -- 2~5: 기타 버튼들
     panel:addChild(UIFactory.createButton("Default", 415, 60, 180, 50, "손님 받기", function()
         UIManager:open('customerPanel')
+        Sounds.play('click')
     end))
     panel:addChild(UIFactory.createButton("Default", 415, 110, 180, 50, "상점", function()
+        Sounds.play('click')
         
     end))
     panel:addChild(UIFactory.createButton("Default", 415, 160, 180, 50, "유지 관리", function()
+        Sounds.play('click')
 
     end))
     panel:addChild(UIFactory.createButton("Default", 415, 240, 180, 50, "통계", function()
+        Sounds.play('click')
 
     end))
 
@@ -115,6 +121,7 @@ return function ()
         -- 1. 설정 버튼 (Icons 모듈 활용)
     local settingBtn = Icons.createIconButton('setting', 6, 264, 32, 32, function()
         UIManager:open('settingPanel')
+        Sounds.play('click')
     end)
     panel:addChild(settingBtn)
 
@@ -122,11 +129,13 @@ return function ()
     local closeBtn = Icons.createIconButton('close', 36, 264, 32, 32, function()
         SaveSystem.save()
         sys.quit()
+        Sounds.play('click')
     end)
     panel:addChild(closeBtn)
 
     local infoBtn = Icons.createIconButton('info', 66, 264, 32, 32, function()
         UIManager:open('infoPanel')
+        Sounds.play('click')
     end)
     panel:addChild(infoBtn)
 

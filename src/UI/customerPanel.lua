@@ -6,6 +6,7 @@ local UIViewport = require ("lib.UI.UIViewport")
 
 local UIFactory = require("src.Table.UiFactory")
 local Datastore = require("src.Datastore")
+local Sounds = require("src.Sounds")
 
 return function ()
     ---@class customerPanel: DraggablePanel
@@ -71,6 +72,7 @@ return function ()
                         customer.isBoarding = false
                     end
                     self:onSetScroll(idx)
+                    Sounds.play('coin')
                 end
 
                 -- 만원이면 승차 버튼 비활성화 (환불은 가능해야 함)
@@ -104,6 +106,7 @@ return function ()
     panel:addChild(slider)
     panel:addChild(UIFactory.createButton("Default", 230, 300, 80, 40, "완료", function()
         UIManager:close(panel)
+        Sounds.play('click')
     end))
 
     panel.visible = false

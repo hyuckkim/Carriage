@@ -44,6 +44,13 @@ return function ()
             license = "Used under CraftPix License",
             url = "https://free-game-assets.itch.io/free-basic-pixel-art-ui-for-rpg",
             thumbnail = "assets/thumbs/CraftPix.png"
+        },
+        {
+            name = "Fantasy User Interface Sounds - Lite Edition",
+            author = "PlaceHolder Inc",
+            license = "Standard Unity Asset Store EULA",
+            url = "https://assetstore.unity.com/packages/audio/sound-fx/fantasy-user-interface-sounds-lite-edition-272919",
+            thumbnail = "assets/thumbs/sfx.png"
         }
     }
 
