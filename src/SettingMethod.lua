@@ -1,29 +1,29 @@
 local SETTINGS_PATH = ""
 
 local SettingMethod = {}
-local Datastore = require("src.Datastore")
+local DataStore = require("src.DataStore")
 local UIManager = require("lib.UIManager")
 
 function SettingMethod.ApplyUIAlpha(v)
-    Datastore.get('settings').uiAlpha = v
+    DataStore.get('settings').uiAlpha = v
 end
 
 function SettingMethod.ApplyBackgroundAlpha(v)
-    Datastore.get('settings').bgAlpha = v
+    DataStore.get('settings').bgAlpha = v
 end
 function SettingMethod.ApplyGameSize(v)
-    Datastore.get('settings').mainSize = v
+    DataStore.get('settings').mainSize = v
 end
 function SettingMethod.ApplySFXEnabled(v)
-    Datastore.get('settings').sfxEnabled = v
+    DataStore.get('settings').sfxEnabled = v
 end
 function SettingMethod.ApplyUISize(v)
-    local oldSize = Datastore.get('settings').uiSize
+    local oldSize = DataStore.get('settings').uiSize
     UIManager:AdjustScale(oldSize, v)
-    Datastore.get('settings').uiSize = v
+    DataStore.get('settings').uiSize = v
 end
 function SettingMethod.ApplyAlwayTop(v)
-    Datastore.get('settings').topmost = v
+    DataStore.get('settings').topmost = v
     sys.topmost(v)
 end
 function SettingMethod.ApplyMonitorIdx(v)
@@ -31,7 +31,7 @@ function SettingMethod.ApplyMonitorIdx(v)
 
     local m = monitors[v]
     sys.pos(m.workX, m.workY)
-    Datastore.get('settings').monitor = v
+    DataStore.get('settings').monitor = v
 end
 function SettingMethod.ApplyStoredPositions(positionTable)
     for id, pos in pairs(positionTable) do
@@ -44,7 +44,7 @@ function SettingMethod.ApplyStoredPositions(positionTable)
 end
 
 function SettingMethod.ApplyAll()
-    local settings = Datastore.get('settings')
+    local settings = DataStore.get('settings')
     if not settings then return nil end
     
     SettingMethod.ApplyGameSize(settings.mainSize)
@@ -77,7 +77,7 @@ function SettingMethod.Init(settingPath)
     local data = res.loadTable(SETTINGS_PATH) or {}
     data = SettingMethod.GetFilled(data)
 
-    Datastore.update('settings', data)
+    DataStore.update('settings', data)
     return data
 end
 function SettingMethod.GetFilled(data)
@@ -97,7 +97,7 @@ function SettingMethod.GetFilled(data)
     return data
 end
 function SettingMethod.Save()
-    local currentSettings = Datastore.get('settings')
+    local currentSettings = DataStore.get('settings')
     currentSettings.uiPosition = SettingMethod.GetUIPositionTable()
     local success = res.saveTable(SETTINGS_PATH, currentSettings)
     

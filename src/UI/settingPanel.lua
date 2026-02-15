@@ -1,13 +1,13 @@
 local UIManager = require("lib.UIManager")
 local UIFactory = require("src.Table.UiFactory")
-local Datastore = require("src.Datastore")
+local DataStore = require("src.DataStore")
 local SettingMethod = require("src.SettingMethod")
 
 local monitorIdx = 1
 
 return function ()
     local panel = UIFactory.createDraggablePanel("Default", 300, 700, 400, 320)
-    local s = SettingMethod.GetFilled(Datastore.get('settings'))
+    local s = SettingMethod.GetFilled(DataStore.get('settings'))
 
     panel:addChild(UIFactory.createText(20, 15, "환경설정"))
 
@@ -36,7 +36,7 @@ return function ()
     panel:addChild(UIFactory.createText(20, 165, "항상 맨 위에 표시", 'Small'))
     panel:addChild(UIFactory.createCheckbox("Default", 160, 160, 24, 24, function(v)
         SettingMethod.ApplyAlwayTop(v)
-    end, Datastore.get('settings').topmost ~= false))
+    end, DataStore.get('settings').topmost ~= false))
 
     panel:addChild(UIFactory.createText(20, 192, "효과음 사용", 'Small'))
     panel:addChild(UIFactory.createCheckbox("Default", 160, 190, 24, 24, function(v)

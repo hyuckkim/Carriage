@@ -5,7 +5,7 @@ local debugger = { x = 0, y = 0, visible = false }
 WindowTitle = "Carriage"
 
 local UIManager = require("lib.UIManager")
-local DataStore = require("src.Datastore")
+local DataStore = require("src.DataStore")
 local CanvasMap = require("src.UI.canvasMap")
 local SettingMethod = require("src.SettingMethod")
 local genGrass = require("src.GenGrass")

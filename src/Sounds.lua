@@ -1,4 +1,4 @@
-local Datastore = require("src.Datastore")
+local DataStore = require("src.DataStore")
 
 local Sounds = {}
 
@@ -9,7 +9,7 @@ function Sounds.register(name, pathList)
 end
 
 function Sounds.play(name, loop, volume)
-    local settings = Datastore.get('settings')
+    local settings = DataStore.get('settings')
     if settings and settings.sfxEnabled == false then
         return
     end

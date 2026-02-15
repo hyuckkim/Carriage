@@ -1,5 +1,5 @@
 local ObjectManager = require("lib.ObjectManager")
-local Datastore = require("src.Datastore")
+local DataStore = require("src.DataStore")
 local Anims = require("src.Table.Anims")
 local Character = require("src.Object.character")
 local Customer = require("src.Object.customer")
@@ -165,7 +165,7 @@ function Tutorial:Finish()
         
         advisor:setPattern("AdvisorIdle")
         -- FSM 전환
-        Datastore.get('fsm'):transition('idle', { advisor })
+        DataStore.get('fsm'):transition('idle', { advisor })
     end
 end
 

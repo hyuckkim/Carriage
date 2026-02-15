@@ -1,4 +1,4 @@
-local DataStore = require("src.Datastore")
+local DataStore = require("src.DataStore")
 local SettingMethod = require("src.SettingMethod")
 
 local SaveSystem = {}

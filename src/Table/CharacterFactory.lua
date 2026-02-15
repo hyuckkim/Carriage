@@ -2,7 +2,7 @@ local CharacterFactory = {}
 local Anim = require('lib.anim')
 local ObjectManager = require("lib.ObjectManager")
 local Customer = require('src.Object.customer')
-local Datastore = require("src.Datastore")
+local DataStore = require("src.DataStore")
 local NewName = require("src.Table.Name")
 
 local SkinAssets = {
@@ -180,7 +180,7 @@ local function pickSkinInfo(gender, categoryName)
 end
 
 local function calculateBudget(origin, target, traits)
-    local map = Datastore.get('canvasMap')
+    local map = DataStore.get('canvasMap')
     if not map or not origin or not target then return math.random(30, 60) end
 
     -- 1. 거리 계산
@@ -220,8 +220,8 @@ local function calculateBudget(origin, target, traits)
 end
 
 function CharacterFactory.createCustomer(pos, currentTown, key)
-    local current = currentTown or Datastore.get('currentTown')
-    local targetTown = Datastore.get('canvasMap'):pickDestination(current.name)
+    local current = currentTown or DataStore.get('currentTown')
+    local targetTown = DataStore.get('canvasMap'):pickDestination(current.name)
     
     local gender = (math.random() > 0.5 and "male" or "female")
     local categories = {"skin", "top", "bottom", "hair", "footage", "hat"}

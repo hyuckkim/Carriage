@@ -1,4 +1,4 @@
-local DataStore = require("src.Datastore")
+local DataStore = require("src.DataStore")
 local UIManager = require("lib.UIManager")
 local ObjectManager = require("lib.ObjectManager")
 local Character = require("src.Object.character")

@@ -1,6 +1,6 @@
 local UIManager = require("lib.UIManager")
 local UIFactory = require("src.Table.UiFactory")
-local Datastore = require("src.Datastore")
+local DataStore = require("src.DataStore")
 local UIViewport = require("lib.UI.UIViewport")
 local Icons = require("src.Table.Icons")
 local SaveSystem = require("src.SaveSystem")
@@ -10,8 +10,8 @@ local CanvasMap = require("src.UI.canvasMap")
 
 ---@param self DraggablePanel
 local function redraw(self)
-    local map = Datastore.get('canvasMap')
-    local currentTown = Datastore.get('currentTown')
+    local map = DataStore.get('canvasMap')
+    local currentTown = DataStore.get('currentTown')
     if not map or not currentTown then return end
 
     local startBtn = self:at(1)
@@ -54,7 +54,7 @@ return function ()
 
     -- 1: 출발 버튼
     panel:addChild(UIFactory.createButton("Default", 415, 10, 180, 50, "출발", function()
-        local map = Datastore.get('canvasMap')
+        local map = DataStore.get('canvasMap')
         if not map or not map.selectedBurg then return end
 
         UIManager:closeAll()
@@ -87,13 +87,13 @@ return function ()
 
     -- 6: 지도 뷰포트
     panel:addChild(UIViewport.new(10, 10, 200, 150, function (x, y, w, h)
-        local map = Datastore.get('canvasMap')
+        local map = DataStore.get('canvasMap')
         if map then
             map:Draw(x, y, w, h, panel.mapOffsetX, panel.mapOffsetY, MAP_W, MAP_H)
         end
     end, function (x, y, button)
-        local map = Datastore.get('canvasMap')
-        local currentTown = Datastore.get('currentTown')
+        local map = DataStore.get('canvasMap')
+        local currentTown = DataStore.get('currentTown')
         if map and currentTown then
             local town = map:getClickTown(x, y, VIEW_W, VIEW_H, panel.mapOffsetX, panel.mapOffsetY, MAP_W, MAP_H)
             local route = town and map:findRoadPathWithLimit(town.name, currentTown.name)
@@ -124,11 +124,11 @@ return function ()
 
     
     panel:addChild(UIFactory.createSlider(10, 155, 200, 8, {2, 2.3, 2.6, 3, 3.3, 3.6, 4.0}, function (v)    
-        local map = Datastore.get('map')
+        local map = DataStore.get('map')
         if not map then return end
         local newCanvasMap = CanvasMap
-            .new(map, Datastore.get('currentTown').name, 800, 600, v)
-        Datastore.update('canvasMap', newCanvasMap)
+            .new(map, DataStore.get('currentTown').name, 800, 600, v)
+        DataStore.update('canvasMap', newCanvasMap)
     end, 7))
 
     local statusText = UIFactory.createText(220, 15, "운송 일지", "Default")
@@ -163,7 +163,7 @@ return function ()
         redraw(self)
     end
     panel.onUpdate = function (self)
-        local gold = Datastore.get('gold') or 0
+        local gold = DataStore.get('gold') or 0
         goldText.text = string.format("%d Gold", math.floor(gold))
     end
     

@@ -5,7 +5,7 @@ local UIElement = require("lib.UI.UIElement")
 local UIViewport = require ("lib.UI.UIViewport")
 
 local UIFactory = require("src.Table.UiFactory")
-local Datastore = require("src.Datastore")
+local DataStore = require("src.DataStore")
 local Sounds = require("src.Sounds")
 
 return function ()
@@ -58,17 +58,17 @@ return function ()
                 end
                 local isFull = boardingCount >= 4
                 local btnText = customer.isBoarding and "환불" or "승차"
-                local currentGold = Datastore.get('gold') or 0
+                local currentGold = DataStore.get('gold') or 0
                 
                 local btnAction = function()
                     local budget = d.budget or 0
                     if not customer.isBoarding then
                         -- [승차] 현재 골드 + 손님 예산
-                        Datastore.update('gold', currentGold + budget)
+                        DataStore.update('gold', currentGold + budget)
                         customer.isBoarding = true
                     else
                         -- [환불] 현재 골드 - 손님 예산 (0 미만 방지)
-                        Datastore.update('gold', currentGold - budget)
+                        DataStore.update('gold', currentGold - budget)
                         customer.isBoarding = false
                     end
                     self:onSetScroll(idx)

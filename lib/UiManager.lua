@@ -1,4 +1,4 @@
-local DataStore = require("src.Datastore")
+local DataStore = require("src.DataStore")
 
 local UIManager = {
     layers = {},    -- 렌더링 순서용 (List)

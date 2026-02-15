@@ -54,7 +54,7 @@ function ObjectManager:Draw()
         self:SortLayers()
     end
 
-    local settings = require("src.Datastore").get('settings')
+    local settings = require("src.DataStore").get('settings')
     local bgAlpha = settings.bgAlpha or 1.0
     local isApplyingBgAlpha = false
 

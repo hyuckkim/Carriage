@@ -1,6 +1,6 @@
 local UIManager = require("lib.UIManager")
 local UIFactory = require("src.Table.UiFactory")
-local DataStore = require("src.Datastore")
+local DataStore = require("src.DataStore")
 local UIViewport = require("lib.UI.UIViewport")
 local Icons = require("src.Table.Icons")
 local SaveSystem = require("src.SaveSystem")

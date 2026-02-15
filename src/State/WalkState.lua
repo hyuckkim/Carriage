@@ -1,5 +1,5 @@
 local ObjectManager = require("lib.ObjectManager")
-local DataStore = require("src.Datastore")
+local DataStore = require("src.DataStore")
 local Customer = require("src.Object.customer")
 local CharacterFactory = require("src.Table.CharacterFactory")
 local genGrass = require("src.GenGrass")
