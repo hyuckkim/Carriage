@@ -125,6 +125,11 @@ return function ()
     end)
     panel:addChild(closeBtn)
 
+    local infoBtn = Icons.createIconButton('info', 66, 264, 32, 32, function()
+        UIManager:open('infoPanel')
+    end)
+    panel:addChild(infoBtn)
+
     panel.onInit = function (self)
         redraw(self)
     end

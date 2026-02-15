@@ -37,18 +37,24 @@ return function ()
     end))
 
 
-    -- 1. 설정 버튼 (Icons 모듈 활용)
+    -- 1. 설정 버튼
     local settingBtn = Icons.createIconButton('setting', 6, 164, 32, 32, function()
         UIManager:open('settingPanel')
     end)
     panel:addChild(settingBtn)
 
-    -- 2. 종료 버튼 (Icons 모듈 활용)
+    -- 2. 종료 버튼
     local closeBtn = Icons.createIconButton('close', 36, 164, 32, 32, function()
         SaveSystem.save()
         sys.quit()
     end)
     panel:addChild(closeBtn)
+    
+    -- 3. 정보 버튼
+    local infoBtn = Icons.createIconButton('info', 66, 164, 32, 32, function()
+        UIManager:open('infoPanel')
+    end)
+    panel:addChild(infoBtn)
 
     -- 실시간 데이터 업데이트
     panel.onUpdate = function (self)

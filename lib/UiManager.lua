@@ -106,6 +106,10 @@ function UIManager:open(target, ...)
         component = target
     end
     
+    if not component then
+        print(target .. ' is not found')
+        return
+    end
     -- 1. 일단 보이게 설정
     component.visible = true
     

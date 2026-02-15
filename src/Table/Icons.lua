@@ -6,11 +6,23 @@ local Items = {}
 local ItemFunc = {}
 
 local function getIconRect(index)
-    local col = (index - 1) % 12
-    local row = math.floor((index - 1) / 12)
+    local col = (index - 1) % 6
+    local row = math.floor((index - 1) / 6)
     -- { x, y, width, height, left, right, top, bottom }
     -- 아이콘이므로 9-slice 마진은 모두 0
     return { col * 16, row * 16, 16, 16, 0, 0, 0, 0 }
+end
+local function offset(rect, x, y)
+    return {
+        rect[1] + x,
+        rect[2] + y,
+        rect[3],
+        rect[4],
+        rect[5],
+        rect[6],
+        rect[7],
+        rect[8]
+    }
 end
 
 -- 아이템 스킨을 쉽게 등록하기 위한 헬퍼 함수
@@ -18,8 +30,14 @@ local function registerIconSkin(name, normalIdx)
     Icons[name] = {
         imagePath = "assets/icons.png",
         normal  = getIconRect(normalIdx),        -- 1~6번 라인 등
-        hover   = getIconRect(normalIdx + 6),    -- 옆으로 6칸 이동 (7~9번 라인 등)
-        pressed = getIconRect(normalIdx + 72)    -- 아래로 6줄 이동 (73번~ 라인)
+        hover   = offset(
+            getIconRect(normalIdx),
+            96, 0
+        ),    -- 옆으로 6칸 이동 (7~9번 라인 등)
+        pressed = offset(
+            getIconRect(normalIdx),
+            0, 96
+        )
     }
 end
 
@@ -85,8 +103,9 @@ function ItemFunc.createItemRect(name, x, y, w, h)
     return UIPanel.new(x, y, w or 16, h or 16, np)
 end
 
-registerIconSkin('setting', 42)
-registerIconSkin('close', 29)
+registerIconSkin('setting', 24)
+registerIconSkin('close', 17)
+registerIconSkin('info', 25)
 
 registerItemSkin('flag', 17, 4)
 return ItemFunc
